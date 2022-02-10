@@ -1,3 +1,12 @@
 [submodule "ganspace"]
 	path = ganspace
 	url = https://github.com/harskish/ganspace.git
+[submodule "stylegan2-pytorch"]
+	path = stylegan2-pytorch
+	url = https://github.com/rosinality/stylegan2-pytorch.git
+[submodule "stylegan2"]
+	path = stylegan2
+	url = https://github.com/NVlabs/stylegan2.git
+[submodule "stylegan2-ada-pytorch"]
+	path = stylegan2-ada-pytorch
+	url = https://github.com/dvschultz/stylegan2-ada-pytorch/
