@@ -69,6 +69,6 @@ def merge_images_horizontally(imgs):
     new_im.save('collage.png') #change the filename if you want
 
 if __name__ == '__main__':
-    images = get_images_vh("experiment_out/selected_target-banana")
+    images = get_images_vh("experiment_out/selected_target-orange_seed-1_d-20_c-6")
     merge_images_horizontally(images)
     
