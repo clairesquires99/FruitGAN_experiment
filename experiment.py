@@ -48,7 +48,7 @@ def apply_factor(i, d, eigvec, g, latent, truncation, trunc, iteration_num):
         )
         grid = utils.save_image(
             img,
-            f"experiment_out/dump/iteration-{iteration_num:02}_frame-{frame_count}.png", # if you have more that 999 frames, increase the padding to :04
+            f"experiment_out/dump/iteration-{iteration_num:02}_frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
             normalize=True,
             value_range=(-1, 1), # updated to 'value_range' from 'range'
             nrow=1,
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     # for loop
     repeats = 5 # number of times to run through all components
-    num_components = 6 # number of eigen vectors to use
+    num_components = 5 # number of eigen vectors to use
     tot_iterations = repeats * num_components
     for iter_num in range(tot_iterations):
         active_comp = iter_num % num_components # active component
@@ -107,6 +107,6 @@ if __name__ == "__main__":
         # get users selected frame
         selected_frame = int(input("Enter the selected frame:"))
         # move selected frame/image from dump to selected folder
-        os.rename(f"experiment_out/dump/iteration-{iter_num:02}_frame-{selected_frame}.png",
-        f"experiment_out/selected/iteration-{iter_num:02}_frame-{selected_frame}.png")
+        os.rename(f"experiment_out/dump/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
+        f"experiment_out/selected/iteration-{iter_num:02}_frame-{selected_frame:03}.png")
         l = pts[selected_frame]
