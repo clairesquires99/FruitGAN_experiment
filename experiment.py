@@ -16,10 +16,19 @@ size = 128
 truncation = 1.5
 start_seed = 0
 degree = 20 # amount of variation for each eigvec
-repeats = 5 # number of times to run through all components
+repeats = 1 # number of times to run through all components
 num_components = 5 # number of eigen vectors to use
 tot_iterations = repeats * num_components
 session_ID = None
+file_path_dump = 'client/public/images'
+file_path_selected = 'experiment_out/selected'
+# file_path_video = 'experiment_out/video_to_stream'
+
+def clear_dir(path):
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 ########################################## code from rosinality #########################
 
@@ -29,10 +38,7 @@ def apply_factor(index, latent):
     pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
 
     # clear dump before every iteration
-    if os.path.exists('experiment_out/dump'):
-        shutil.rmtree('experiment_out/dump')
-    if not os.path.exists('experiment_out/dump'):
-        os.makedirs('experiment_out/dump')
+    clear_dir(file_path_dump)
 
     frame_count = 0
     for pt in pts:
@@ -44,7 +50,7 @@ def apply_factor(index, latent):
         )
         grid = utils.save_image(
             img,
-            f"experiment_out/dump/iteration-{iter_num:02}_frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
+            f"{file_path_dump}/frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
             normalize=True,
             value_range=(-1, 1), # updated to 'value_range' from 'range'
             nrow=1,
@@ -88,15 +94,9 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     g.load_state_dict(ckpt["g_ema"], strict=False)
     trunc = g.mean_latent(4096)
     
-    if os.path.exists('experiment_out/selected'):
-        shutil.rmtree('experiment_out/selected')
-    if not os.path.exists('experiment_out/selected'):
-        os.makedirs('experiment_out/selected')
-
-    if os.path.exists('experiment_out/video_to_stream'):
-        shutil.rmtree('experiment_out/video_to_stream')
-    if not os.path.exists('experiment_out/video_to_stream'):
-        os.makedirs('experiment_out/video_to_stream')
+    clear_dir(file_path_dump)
+    clear_dir(file_path_selected)
+    #clear_dir(file_path_video)
 
     # generate starting latent vector
     torch.manual_seed(start_seed)
@@ -107,7 +107,7 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     iter_num = 0
     active_comp = iter_num % num_components # active component
     pts = apply_factor(index=active_comp, latent=l)
-    # cmd=f"ffmpeg -loglevel panic -y -r 10 -i experiment_out/dump/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
+    # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
 
     return pts
@@ -115,15 +115,17 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
 def experiment_loop(selected_frame):
     global iter_num
     global pts
+    selected_frame = int(selected_frame)
+    print(iter_num)
     # move selected frame/image from dump to selected folder
-    os.rename(f"experiment_out/dump/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
-    f"experiment_out/selected/iteration-{iter_num:02}_frame-{selected_frame:03}.png")
+    os.rename(f"{file_path_dump}/frame-{selected_frame:03}.png",
+    f"{file_path_selected}/iteration-{iter_num:02}_frame-{selected_frame:03}.png")
     iter_num += 1
     l = pts[selected_frame]
     active_comp = iter_num % num_components # active component
     pts = apply_factor(index=active_comp, latent=l)
     # create video
-    # cmd=f"ffmpeg -loglevel panic -y -r 10 -i experiment_out/dump/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
+    # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
     return pts
 
