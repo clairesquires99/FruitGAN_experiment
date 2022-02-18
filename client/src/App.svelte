@@ -1,30 +1,31 @@
 <script>
-	export let name;
+	let frame_num = 20;
+	let sessionID = -1;
+	function doSomething() {
+		fecth("./getSessionID")
+			.then((d) => d.text())
+			.then((d) => (sessionID = d));
+	}
 </script>
 
-<main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-</main>
+<img
+	src="images/iteration-02_frame-{String(frame_num).padStart(3, '0')}.png"
+	alt="experimental fruit"
+/>
+
+<label>
+	<input type="range" bind:value={frame_num} min="0" max="39" />
+</label>
+<p>Slider is at {frame_num}</p>
+<p>This is your session ID: {sessionID}</p>
+<button on:click={doSomething}>Confirm</button>
 
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
+	label {
+		display: flex;
 	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
+	input,
+	p {
+		margin: 6px;
 	}
 </style>
