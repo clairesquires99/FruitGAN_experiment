@@ -86,9 +86,9 @@ def experiment_setup(ckpt, cff, size, truncation, start_seed, channel_multiplier
 
     return eigvec, g, trunc, l
 
-def experiment_loop(iter_num, num_components, eigvec, g, l, truncation, trunc):
+def experiment_loop(iter_num, num_components, degree, eigvec, g, l, truncation, trunc):
     active_comp = iter_num % num_components # active component
-    pts = apply_factor(i=active_comp, d=20, eigvec=eigvec, g=g, latent=l, truncation=truncation, trunc=trunc, iteration_num=iter_num)
+    pts = apply_factor(i=active_comp, d=degree, eigvec=eigvec, g=g, latent=l, truncation=truncation, trunc=trunc, iteration_num=iter_num)
     # create video
     cmd=f"ffmpeg -loglevel panic -y -r 10 -i experiment_out/dump/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     subprocess.call(cmd, shell=True)
@@ -101,16 +101,19 @@ def experiment_loop(iter_num, num_components, eigvec, g, l, truncation, trunc):
     return l
 
 if __name__ == "__main__":
+    # settings
     ckpt = 'custom_models/fruits3.pt' 
     cff = 'stylegan2-pytorch/factor_fruits3.pt'
     size = 128
     truncation = 1.5
     start_seed = 1
+    degree = 20 # amount of variation for each eigvec
     repeats = 5 # number of times to run through all components
     num_components = 5 # number of eigen vectors to use
     tot_iterations = repeats * num_components
 
+    # setup the experiment
     eigvec, g, trunc, l = experiment_setup(ckpt, cff, size, truncation, start_seed)
 
     for iter_num in range(tot_iterations):
-        l = experiment_loop(iter_num, num_components, eigvec, g, l, truncation, trunc)
+        l = experiment_loop(iter_num, num_components, degree, eigvec, g, l, truncation, trunc)

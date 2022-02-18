@@ -20,9 +20,10 @@ def home(path):
 # def hello():
 #     return str(random.randint(0, 100))
 
-@app.route("/test")
+@app.route("/test/<arg>")
 def hello(arg):
-    return test(arg)
+    test(arg)
+    return 'this worked'
 
 
 if __name__ == "__main__":

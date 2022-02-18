@@ -1,10 +1,8 @@
 <script>
 	let frame_num = 20;
-	function imported_function(frame_num) {
-		fecth("./test");
-		// .then((d) => d.text())
-		// .then((d) => (frame_num = d));
-	}
+	let run_experiment = (arg) => {
+		fetch("./test/" + arg);
+	};
 </script>
 
 <img
@@ -16,7 +14,7 @@
 	<input type="range" bind:value={frame_num} min="0" max="39" />
 </label>
 <p>Slider is at {frame_num}</p>
-<button on:click={() => imported_function(frame_num)}>Confirm</button>
+<button on:click={run_experiment(frame_num)}>Confirm</button>
 
 <style>
 	label {
