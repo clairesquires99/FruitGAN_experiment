@@ -5,6 +5,7 @@ import random
 app = Flask(__name__)
 
 from test import test
+from experiment import experiment_setup, experiment_loop
 
 # Path for our main Svelte page
 @app.route("/")
@@ -16,9 +17,15 @@ def base():
 def home(path):
     return send_from_directory('client/public', path)
 
-# @app.route("/rand")
-# def hello():
-#     return str(random.randint(0, 100))
+@app.route("/start_experiment")
+def start():
+    experiment_setup()
+    # send to experiment loop
+
+@app.route("/running_experiment/<selected_frame>")
+def run(selected_frame):
+    experiment_loop(selected_frame)
+    return 'this worked'
 
 @app.route("/test/<arg>")
 def hello(arg):

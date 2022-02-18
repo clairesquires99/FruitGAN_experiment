@@ -75,6 +75,7 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     global g
     global trunc
     global iter_num
+    global pts
     # generate experiment ID
     session_ID = binascii.hexlify(os.urandom(8)).decode()
     print(session_ID)
@@ -111,8 +112,9 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
 
     return pts
 
-def experiment_loop(selected_frame, pts):
+def experiment_loop(selected_frame):
     global iter_num
+    global pts
     # move selected frame/image from dump to selected folder
     os.rename(f"experiment_out/dump/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
     f"experiment_out/selected/iteration-{iter_num:02}_frame-{selected_frame:03}.png")
@@ -126,7 +128,8 @@ def experiment_loop(selected_frame, pts):
     return pts
 
 if __name__ == "__main__":
+    global pts
     pts = experiment_setup()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
-        pts = experiment_loop(selected_frame, pts)
+        pts = experiment_loop(selected_frame)
