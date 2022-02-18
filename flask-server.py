@@ -4,6 +4,8 @@ import random
 
 app = Flask(__name__)
 
+from test import test
+
 # Path for our main Svelte page
 @app.route("/")
 def base():
@@ -18,9 +20,10 @@ def home(path):
 # def hello():
 #     return str(random.randint(0, 100))
 
-@app.route("/getSessionID")
-def getSessionID():
-    return str(random.randint(0, 10000))
+@app.route("/test")
+def hello(arg):
+    return test(arg)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

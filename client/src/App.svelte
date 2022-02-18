@@ -1,10 +1,9 @@
 <script>
 	let frame_num = 20;
-	let sessionID = -1;
-	function doSomething() {
-		fecth("./getSessionID")
-			.then((d) => d.text())
-			.then((d) => (sessionID = d));
+	function imported_function(frame_num) {
+		fecth("./test");
+		// .then((d) => d.text())
+		// .then((d) => (frame_num = d));
 	}
 </script>
 
@@ -17,8 +16,7 @@
 	<input type="range" bind:value={frame_num} min="0" max="39" />
 </label>
 <p>Slider is at {frame_num}</p>
-<p>This is your session ID: {sessionID}</p>
-<button on:click={doSomething}>Confirm</button>
+<button on:click={() => imported_function(frame_num)}>Confirm</button>
 
 <style>
 	label {
