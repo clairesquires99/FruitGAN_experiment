@@ -2,7 +2,7 @@
 from flask import Flask, send_from_directory, redirect, render_template
 import random
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='client/public')
 
 from experiment import experiment_setup, experiment_loop
 
@@ -20,6 +20,7 @@ def base():
 @app.route("/done")
 def end():
     return send_from_directory('client/public', 'done.html')
+    
 
 # Path for all the static files (compiled JS/CSS, etc.)
 @app.route("/<path:path>")

@@ -111,6 +111,8 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
 
+    print("Experiment ready")
+
     return tot_iterations, pts
 
 def experiment_loop(selected_frame):

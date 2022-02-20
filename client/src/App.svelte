@@ -3,7 +3,7 @@
 
 	let frame_num = 20;
 	let iter_num = 0;
-	let tot_iterations = -1;
+	let tot_iterations;
 
 	onMount(async () => {
 		fetch("./start_experiment")
@@ -17,23 +17,28 @@
 			fetch("./running_experiment/" + arg);
 		} else {
 			fetch("./done");
+			// this.redirect(302, "./done");
 		}
 	};
 </script>
 
 <main>
-	<img
-		src="images/frame-{String(frame_num).padStart(3, '0')}.png"
-		alt="experimental fruit"
-	/>
+	{#await onMount}
+		<p>waiting for the promise to resolve...</p>
+	{:then}
+		<img
+			src="images/frame-{String(frame_num).padStart(3, '0')}.png"
+			alt="experimental fruit"
+		/>
 
-	<label>
-		<input type="range" bind:value={frame_num} min="0" max="39" />
-	</label>
-	<p>Slider is at {frame_num}</p>
-	<button on:click={run_experiment(frame_num)}>Confirm</button>
-	<p>Iteration {iter_num}</p>
-	<p>Total iterations {tot_iterations}</p>
+		<label>
+			<input type="range" bind:value={frame_num} min="0" max="39" />
+		</label>
+		<p>Slider is at {frame_num}</p>
+		<button on:click={run_experiment(frame_num)}>Confirm</button>
+		<p>Iteration {iter_num}</p>
+		<p>Total iterations {tot_iterations}</p>
+	{/await}
 </main>
 
 <style>
