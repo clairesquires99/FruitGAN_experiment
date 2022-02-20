@@ -4,6 +4,7 @@ import subprocess
 import torch
 from torchvision import utils
 import binascii
+from PIL import Image
 
 import sys
 sys.path.append('stylegan2-pytorch') # necessary to get Generator from model
@@ -110,7 +111,7 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
 
-    return pts
+    return tot_iterations, pts
 
 def experiment_loop(selected_frame):
     global iter_num
@@ -129,9 +130,30 @@ def experiment_loop(selected_frame):
     # subprocess.call(cmd, shell=True)
     return pts
 
+def experiment_finish():
+    # saves selected images to progression.png
+    images = os.listdir(file_path_selected)
+    images.sort()
+    cwd = os.getcwd()
+    os.chdir(file_path_selected) # change direcotory to where images are
+    images = [Image.open(im) for im in images]
+    os.chdir(cwd) # change back to original directory
+    #create two lists - one for heights and one for widths
+    widths, heights = zip(*(i.size for i in images))
+    width_of_new_image = sum(widths)
+    height_of_new_image = min(heights) #take minimum height
+    # create new image
+    new_im = Image.new('RGB', (width_of_new_image, height_of_new_image))
+    new_pos = 0
+    for im in images:
+        new_im.paste(im, (new_pos,0))
+        new_pos += im.size[0]
+    new_im.save(f'{file_path_selected}/progression.png')
+
 if __name__ == "__main__":
     global pts
-    pts = experiment_setup()
+    _ , pts = experiment_setup()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
         pts = experiment_loop(selected_frame)
+    experiment_finish()
