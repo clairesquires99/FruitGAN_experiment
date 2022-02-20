@@ -3,10 +3,12 @@
 
 	let frame_num = 20;
 	let iter_num = 0;
-	let tot_iterations;
+	let tot_iterations = -1;
 
 	onMount(async () => {
-		tot_iterations = await fetch("./start_experiment");
+		fetch("./start_experiment")
+			.then((d) => d.text())
+			.then((d) => (tot_iterations = d));
 	});
 
 	let run_experiment = (arg) => {
@@ -30,6 +32,8 @@
 	</label>
 	<p>Slider is at {frame_num}</p>
 	<button on:click={run_experiment(frame_num)}>Confirm</button>
+	<p>Iteration {iter_num}</p>
+	<p>Total iterations {tot_iterations}</p>
 </main>
 
 <style>
