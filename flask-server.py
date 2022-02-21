@@ -4,7 +4,7 @@ import random
 
 app = Flask(__name__, template_folder='client/public')
 
-from experiment import experiment_setup, experiment_loop
+from experiment import experiment_setup, experiment_loop, experiment_finish
 
 # Path for our start page
 @app.route("/")
@@ -19,8 +19,8 @@ def base():
 # Path for our final page
 @app.route("/done")
 def end():
+    experiment_finish()
     return send_from_directory('client/public', 'done.html')
-    
 
 # Path for all the static files (compiled JS/CSS, etc.)
 @app.route("/<path:path>")
@@ -34,8 +34,8 @@ def start():
 
 @app.route("/running_experiment/<selected_frame>")
 def run(selected_frame):
-    experiment_loop(selected_frame)
-    return 'this worked'
+    iter_num , _ = experiment_loop(selected_frame)
+    return str(iter_num)
 
 
 if __name__ == "__main__":

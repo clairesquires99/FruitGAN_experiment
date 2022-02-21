@@ -51,7 +51,7 @@ def apply_factor(index, latent):
         )
         grid = utils.save_image(
             img,
-            f"{file_path_dump}/frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
+            f"{file_path_dump}/iteration-{iter_num:02}_frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
             normalize=True,
             value_range=(-1, 1), # updated to 'value_range' from 'range'
             nrow=1,
@@ -111,17 +111,18 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
 
-    print("Experiment ready")
+    print("Experiment setup finished")
 
     return tot_iterations, pts
 
 def experiment_loop(selected_frame):
+    print("Experiment loop running with selected frame: ", selected_frame)
     global iter_num
     global pts
     selected_frame = int(selected_frame)
     print(iter_num)
     # move selected frame/image from dump to selected folder
-    os.rename(f"{file_path_dump}/frame-{selected_frame:03}.png",
+    os.rename(f"{file_path_dump}/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
     f"{file_path_selected}/iteration-{iter_num:02}_frame-{selected_frame:03}.png")
     iter_num += 1
     l = pts[selected_frame]
@@ -130,7 +131,7 @@ def experiment_loop(selected_frame):
     # create video
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
-    return pts
+    return iter_num, pts
 
 def experiment_finish():
     # saves selected images to progression.png
@@ -157,5 +158,5 @@ if __name__ == "__main__":
     _ , pts = experiment_setup()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
-        pts = experiment_loop(selected_frame)
+        _ , pts = experiment_loop(selected_frame)
     experiment_finish()
