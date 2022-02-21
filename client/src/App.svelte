@@ -1,12 +1,14 @@
 <script>
 	import { onMount } from "svelte";
+	import { Moon } from "svelte-loading-spinners";
 
 	let frame_num = 20;
 	let iter_num = 0;
 	let tot_iterations;
+	let response;
 
-	onMount(async () => {
-		fetch("./start_experiment")
+	onMount(() => {
+		response = fetch("./start_experiment")
 			.then((d) => d.text())
 			.then((d) => (tot_iterations = d));
 	});
@@ -23,8 +25,9 @@
 </script>
 
 <main>
-	{#await onMount}
-		<p>waiting for the promise to resolve...</p>
+	{#await response}
+		<p>Loading...</p>
+		<Moon size="60" color="#FF3E00" unit="px" duration="1s" />
 	{:then}
 		<img
 			src="images/frame-{String(frame_num).padStart(3, '0')}.png"
