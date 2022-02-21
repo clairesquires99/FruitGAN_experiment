@@ -19,8 +19,8 @@
 			iter_num++;
 			response = fetch("./running_experiment/" + arg);
 		} else {
-			fetch("./done");
-			// this.redirect(302, "./done");
+			// window.location.assign("./done");
+			window.location.href = "./done";
 		}
 	};
 </script>
@@ -46,6 +46,7 @@
 	<button on:click={run_experiment(frame_num)}>Confirm</button>
 	<p>Iteration {iter_num}</p>
 	<p>Total iterations {tot_iterations}</p>
+	<a href="./done">click here</a>
 </main>
 
 <style>

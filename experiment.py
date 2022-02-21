@@ -5,6 +5,7 @@ import torch
 from torchvision import utils
 import binascii
 from PIL import Image
+import math
 
 import sys
 sys.path.append('stylegan2-pytorch') # necessary to get Generator from model
@@ -18,9 +19,10 @@ truncation = 1.5
 start_seed = 0
 degree = 20 # amount of variation for each eigvec
 repeats = 1 # number of times to run through all components
-num_components = 5 # number of eigen vectors to use
+num_components = 1 # number of eigen vectors to use
 tot_iterations = repeats * num_components
 session_ID = None
+target_category = 'apple'
 file_path_dump = 'client/public/images'
 file_path_selected = 'experiment_out/selected'
 # file_path_video = 'experiment_out/video_to_stream'
@@ -110,10 +112,13 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     pts = apply_factor(index=active_comp, latent=l)
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
+    
+    starting_image_num = Math.floor(len(pts)/2)
+    starting_image_path = f"{file_path_dump}/iteration-{iter_num:02}_frame-{starting_image_num:03}.png"
 
     print("Experiment setup finished")
 
-    return tot_iterations, pts
+    return pts, sessionID, target_category, starting_image_path, iter_num, tot_iterations
 
 def experiment_loop(selected_frame):
     print("Experiment loop running with selected frame: ", selected_frame)
@@ -122,8 +127,10 @@ def experiment_loop(selected_frame):
     selected_frame = int(selected_frame)
     print(iter_num)
     # move selected frame/image from dump to selected folder
+    selected_image_path = f"{file_path_selected}/iteration-{iter_num:02}_frame-{selected_frame:03}.png"
     os.rename(f"{file_path_dump}/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
-    f"{file_path_selected}/iteration-{iter_num:02}_frame-{selected_frame:03}.png")
+    selected_image_path)
+    # start next iteration    
     iter_num += 1
     l = pts[selected_frame]
     active_comp = iter_num % num_components # active component
@@ -131,7 +138,7 @@ def experiment_loop(selected_frame):
     # create video
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
-    return iter_num, pts
+    return pts, sessionID, target_category, selected_image_path, iter_num
 
 def experiment_finish():
     # saves selected images to progression.png
@@ -155,8 +162,8 @@ def experiment_finish():
 
 if __name__ == "__main__":
     global pts
-    _ , pts = experiment_setup()
+    pts = experiment_setup()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
-        _ , pts = experiment_loop(selected_frame)
+        pts = experiment_loop(selected_frame)
     experiment_finish()
