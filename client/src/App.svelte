@@ -6,12 +6,17 @@
 	let iter_num = 0;
 	let tot_iterations;
 	let response;
-	let target_category = "apple";
+	let target_category = "loading..."; //place holder
+	let session_ID;
 
 	onMount(() => {
 		response = fetch("./start_experiment")
-			.then((d) => d.text())
-			.then((d) => (tot_iterations = d));
+			.then((data) => data.json())
+			.then((data) => {
+				tot_iterations = data.tot_iterations;
+				session_ID = data.session_ID;
+				target_category = data.target_category;
+			});
 	});
 
 	let run_experiment = (arg) => {
@@ -19,7 +24,6 @@
 			iter_num++;
 			response = fetch("./running_experiment/" + arg);
 		} else {
-			// window.location.assign("./done");
 			window.location.href = "./done";
 		}
 	};
@@ -56,7 +60,8 @@
 		<button class="btn btn-primary" on:click={run_experiment(frame_num)}
 			>Confirm</button
 		>
-		<!-- <p>Iteration {iter_num}</p>
-		<p>Total iterations {tot_iterations}</p> -->
+		<p class="small text-muted">Iteration: {iter_num}</p>
+		<p class="small text-muted">Total iterations: {tot_iterations}</p>
+		<p class="small text-muted">Session ID: {session_ID}</p>
 	</div>
 </div>

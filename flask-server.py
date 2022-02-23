@@ -2,6 +2,7 @@
 from flask import Flask, send_from_directory, redirect, render_template, request, flash
 import sqlite3 as sql
 from experiment import experiment_setup, experiment_loop, experiment_finish
+import json
 
 app = Flask(__name__, template_folder='client/public')
 
@@ -49,14 +50,19 @@ def home(path):
 
 @app.route("/start_experiment")
 def start():
-    _ , sessionID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
-    insert_database(sessionID, target_category, iter_num, image_path)
-    return str(tot_iterations)
+    _ , session_ID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
+    insert_database(session_ID, target_category, iter_num, image_path)
+    return_str = {
+        "tot_iterations": tot_iterations,
+        "session_ID": session_ID,
+        "target_category": target_category
+    }
+    return json.dumps(return_str)
 
 @app.route("/running_experiment/<selected_frame>")
 def run(selected_frame):
-    _ , sessionID, target_category, image_path, iter_num = experiment_loop(selected_frame)
-    insert_database(sessionID, target_category, iter_num, image_path)
+    _ , session_ID, target_category, image_path, iter_num = experiment_loop(selected_frame)
+    insert_database(session_ID, target_category, iter_num, image_path)
     return str(iter_num)
 
 @app.route("/done")
