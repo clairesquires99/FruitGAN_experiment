@@ -5,11 +5,10 @@ c = conn.cursor()
 
 c.execute('''
           CREATE TABLE results (
-            [pk] INTEGER PRIMARY KEY,
-            [session_id] VARCHAR(8),
-            [target_category] VARCHAR(20),
-            [iteration_num] INTEGER,
-            [image] BLOB
+            [session_id] VARCHAR(8) NOT NULL,
+            [target_category] VARCHAR(20) NOT NULL,
+            [iteration_num] INTEGER NOT NULL,
+            [image] BLOB NOT NULL
           )
           ''')
                      

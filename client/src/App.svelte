@@ -46,7 +46,6 @@
 	<button on:click={run_experiment(frame_num)}>Confirm</button>
 	<p>Iteration {iter_num}</p>
 	<p>Total iterations {tot_iterations}</p>
-	<a href="./done">click here</a>
 </main>
 
 <style>
