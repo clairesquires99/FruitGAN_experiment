@@ -6,11 +6,6 @@ from experiment import experiment_setup, experiment_loop, experiment_finish
 app = Flask(__name__, template_folder='client/public')
 
 # DATABASE
-# db_name = 'experiment.db'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-# db = SQLAlchemy(app)
-
 def get_db_connection():
     conn = sql.connect('experiment.db')
     conn.row_factory = sql.Row
@@ -21,6 +16,20 @@ def convertToBinaryData(filename):
     with open(filename, 'rb') as file:
         binaryData = file.read()
     return binaryData
+
+def insert_database(sessionID, target_category, iter_num, image_path):
+    image_blob = convertToBinaryData(image_path)
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO results \
+        (session_id, target_category, iteration_num, image) \
+        VALUES (?, ?, ?, ?)',(sessionID, target_category, iter_num, image_blob))
+        conn.commit()
+    except:
+        conn.rollback()
+        print("ERROR: could not insert data into table")
+    finally:
+        conn.close()
 
 # ROUTING
 # Path for start page
@@ -40,26 +49,14 @@ def home(path):
 
 @app.route("/start_experiment")
 def start():
-    _ , sessionID, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup()
-    image_blob = convertToBinaryData(starting_image_path)
-    conn = get_db_connection()
-    conn.execute('INSERT INTO results \
-    (session_id, target_category, iteration_num, image) \
-    VALUES (?, ?, ?, ?)',(sessionID, target_category, iter_num, image_blob))
-    conn.commit()
-    conn.close()
+    _ , sessionID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
+    insert_database(sessionID, target_category, iter_num, image_path)
     return str(tot_iterations)
 
 @app.route("/running_experiment/<selected_frame>")
 def run(selected_frame):
     _ , sessionID, target_category, image_path, iter_num = experiment_loop(selected_frame)
-    image_blob = convertToBinaryData(image_path)
-    conn = get_db_connection()
-    conn.execute('INSERT INTO results \
-    (session_id, target_category, iteration_num, image) \
-    VALUES (?, ?, ?, ?)',(sessionID, target_category, iter_num, image_blob))
-    conn.commit()
-    conn.close()
+    insert_database(sessionID, target_category, iter_num, image_path)
     return str(iter_num)
 
 @app.route("/done")
