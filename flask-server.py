@@ -35,12 +35,12 @@ def insert_database(sessionID, target_category, iter_num, image_path):
 # Path for start page
 @app.route("/")
 def hello():
-    return send_from_directory('client/public', 'index.html')
+    return render_template('index.html')
 
 # Path for our main Svelte page (experiment)
 @app.route("/experiment")
 def experiment():
-    return send_from_directory('client/public', 'experiment.html')
+    return render_template('experiment.html')
 
 # Path for all the static files (compiled JS/CSS, etc.)
 @app.route("/<path:path>")
@@ -62,7 +62,7 @@ def run(selected_frame):
 @app.route("/done")
 def end():
     experiment_finish()
-    return send_from_directory('client/public','done.html')
+    return render_template('done.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

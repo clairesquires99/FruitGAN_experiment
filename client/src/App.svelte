@@ -6,7 +6,7 @@
 	let iter_num = 0;
 	let tot_iterations;
 	let response;
-	let response2;
+	let target_category = "apple";
 
 	onMount(() => {
 		response = fetch("./start_experiment")
@@ -25,35 +25,38 @@
 	};
 </script>
 
-<main>
-	{#await response}
-		<p>Loading...</p>
-		<Moon size="60" color="#FF3E00" unit="px" duration="1s" />
-	{:then}
-		{#if response}
-			<img
-				src="images/iteration-{String(iter_num).padStart(2, '0')}_
+<div class="container-lg d-flex justify-content-center">
+	<div class="container-md cont">
+		<div class="cont-fruit-image">
+			{#await response}
+				<Moon size="60" color="#333" unit="px" duration="1s" />
+			{:then}
+				{#if response}
+					<img
+						src="images/iteration-{String(iter_num).padStart(2, '0')}_
 				frame-{String(frame_num).padStart(3, '0')}.png"
-				alt="experimental fruit"
-			/>
-		{/if}
-	{/await}
+						alt="experimental fruit"
+					/>
+				{/if}
+			{/await}
+		</div>
 
-	<label>
-		<input type="range" bind:value={frame_num} min="0" max="39" />
-	</label>
-	<p>Slider is at {frame_num}</p>
-	<button on:click={run_experiment(frame_num)}>Confirm</button>
-	<p>Iteration {iter_num}</p>
-	<p>Total iterations {tot_iterations}</p>
-</main>
-
-<style>
-	label {
-		display: flex;
-	}
-	input,
-	p {
-		margin: 6px;
-	}
-</style>
+		<p>
+			Adjust the slider to match the following <br />word as well as possible:
+		</p>
+		<p><strong>{target_category}</strong></p>
+		<input
+			class="form-range"
+			type="range"
+			bind:value={frame_num}
+			min="0"
+			max="39"
+		/>
+		<p class="small text-muted">Slider is at {frame_num}</p>
+		<button class="btn btn-primary" on:click={run_experiment(frame_num)}
+			>Confirm</button
+		>
+		<!-- <p>Iteration {iter_num}</p>
+		<p>Total iterations {tot_iterations}</p> -->
+	</div>
+</div>
