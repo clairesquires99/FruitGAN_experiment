@@ -10,12 +10,12 @@ import timeit
 import random
 
 import sys
-sys.path.append('stylegan2-pytorch') # necessary to get Generator from model
+sys.path.insert(0, '/home/csquires/FruitGAN_experiment/stylegan2-pytorch') # necessary to get Generator from model
 from model import Generator
 
 # settings
-ckpt_path = 'custom_models/fruits3.pt' 
-cff_path = 'stylegan2-pytorch/factor_fruits3.pt'
+ckpt_path = '../custom_models/fruits3.pt' 
+cff_path = '../stylegan2-pytorch/factor_fruits3.pt'
 size = 128
 truncation = 1.5
 start_seed = 0
@@ -24,9 +24,9 @@ repeats = 1 # number of times to run through all components
 num_components = 5 # number of eigen vectors to use
 tot_iterations = repeats * num_components
 target_category = 'apple'
-file_path_dump = 'client/public/images'
-file_path_selected = 'experiment_out/selected'
-# file_path_video = 'experiment_out/video_to_stream'
+file_path_dump = '../client/public/images'
+file_path_selected = '../experiment_out/selected'
+# file_path_video = '../experiment_out/video_to_stream'
 
 session_ID = None
 

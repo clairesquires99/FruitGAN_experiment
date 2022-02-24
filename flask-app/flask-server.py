@@ -4,7 +4,7 @@ import sqlite3 as sql
 from experiment import experiment_setup, experiment_loop, experiment_finish
 import json
 
-app = Flask(__name__, template_folder='client/public')
+app = Flask(__name__, template_folder='../client/public')
 
 # DATABASE
 def get_db_connection():
@@ -13,7 +13,7 @@ def get_db_connection():
     return conn
 
 def convertToBinaryData(filename):
-    # Convert digital data to binary format
+    # convert digital data to binary format
     with open(filename, 'rb') as file:
         binaryData = file.read()
     return binaryData
@@ -50,7 +50,7 @@ def error():
 # Path for all the static files (compiled JS/CSS, etc.)
 @app.route("/<path:path>")
 def home(path):
-    return send_from_directory('client/public', path)
+    return send_from_directory('../client/public', path)
 
 @app.route("/start_experiment")
 def start():
