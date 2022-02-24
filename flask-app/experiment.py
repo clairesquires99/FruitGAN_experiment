@@ -20,7 +20,7 @@ size = 128
 truncation = 1.5
 start_seed = 0
 degree = 20 # amount of variation for each eigvec
-repeats = 1 # number of times to run through all components
+repeats = 3 # number of times to run through all components
 num_components = 5 # number of eigen vectors to use
 tot_iterations = repeats * num_components
 target_category = 'apple'
@@ -44,7 +44,7 @@ def apply_factor(index, latent):
     pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
 
     # clear dump before every iteration
-    clear_dir(file_path_dump)
+    clear_dir(f"{file_path_dump}/{session_ID}")
 
     frame_count = 0
     for pt in pts:
@@ -56,7 +56,7 @@ def apply_factor(index, latent):
         )
         grid = utils.save_image(
             img,
-            f"{file_path_dump}/iteration-{iter_num:02}_frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
+            f"{file_path_dump}/{session_ID}/iteration-{iter_num:02}_frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
             normalize=True,
             value_range=(-1, 1), # updated to 'value_range' from 'range'
             nrow=1,
@@ -92,11 +92,7 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     global iter_num
     global pts
     # generate experiment ID
-    session_ID = binascii.hexlify(os.urandom(8)).decode()
-
-    file_path_dump += f'/{session_ID}'
-    file_path_selected += f'/{session_ID}'
-    # file_path_video += f'/{session_ID}'
+    session_ID = binascii.hexlify(os.urandom(4)).decode()
 
     # setup for applying factors
     torch.set_grad_enabled(False)
@@ -106,9 +102,9 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     g.load_state_dict(ckpt["g_ema"], strict=False)
     trunc = g.mean_latent(4096)
     
-    clear_dir(file_path_dump)
-    clear_dir(file_path_selected)
-    #clear_dir(file_path_video)
+    clear_dir(f"{file_path_dump}/{session_ID}")
+    clear_dir(f"{file_path_selected}/{session_ID}")
+    #clear_dir(f"{file_path_video}/{session_ID}")
 
     # generate starting latent vector
     torch.manual_seed(start_seed)
@@ -123,7 +119,8 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     # subprocess.call(cmd, shell=True)
     
     starting_image_num = math.floor(len(pts)/2)
-    starting_image_path = f"{file_path_dump}/iteration-{iter_num:02}_frame-{starting_image_num:03}.png"
+    starting_image_path = f"{file_path_dump}/{session_ID}/iteration-00_frame-{starting_image_num:03}.png"
+    shutil.copyfile(starting_image_path,f"{file_path_selected}/{session_ID}/0seed.png")
 
     print("Experiment setup finished")
     return pts, session_ID, target_category, starting_image_path, iter_num, tot_iterations
@@ -135,10 +132,10 @@ def experiment_loop(selected_frame):
     selected_frame = int(selected_frame)
     print("Iteration #", iter_num)
     # move selected frame/image from dump to selected folder
-    selected_image_path = f"{file_path_selected}/iteration-{iter_num:02}_frame-{selected_frame:03}.png"
-    os.rename(f"{file_path_dump}/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
+    selected_image_path = f"{file_path_selected}/{session_ID}/iteration-{iter_num:02}_frame-{selected_frame:03}.png"
+    os.rename(f"{file_path_dump}/{session_ID}/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
     selected_image_path)
-    # start next iteration    
+    # start next iteration
     iter_num += 1
     l = pts[selected_frame]
     active_comp = iter_num % num_components # active component
@@ -150,10 +147,12 @@ def experiment_loop(selected_frame):
 
 def experiment_finish():
     # saves selected images to progression.png
-    images = os.listdir(file_path_selected)
+    if os.path.exists(f"{file_path_dump}/{session_ID}"):
+        shutil.rmtree(f"{file_path_dump}/{session_ID}")
+    images = os.listdir(f"{file_path_selected}/{session_ID}")
     images.sort()
     cwd = os.getcwd()
-    os.chdir(file_path_selected) # change direcotory to where images are
+    os.chdir(f"{file_path_selected}/{session_ID}") # change direcotory to where images are
     images = [Image.open(im) for im in images]
     os.chdir(cwd) # change back to original directory
     #create two lists - one for heights and one for widths
@@ -166,7 +165,7 @@ def experiment_finish():
     for im in images:
         new_im.paste(im, (new_pos,0))
         new_pos += im.size[0]
-    new_im.save(f'{file_path_selected}/progression.png')
+    new_im.save(f'{file_path_selected}/{session_ID}/progression.png')
 
 # timing tests
 def time_this():
