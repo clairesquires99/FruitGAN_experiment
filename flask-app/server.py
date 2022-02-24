@@ -82,4 +82,4 @@ def end():
     return render_template('done.html')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0')
