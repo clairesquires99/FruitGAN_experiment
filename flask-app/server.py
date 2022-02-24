@@ -1,10 +1,15 @@
 
 from flask import Flask, send_from_directory, redirect, render_template, request, flash
 import sqlite3 as sql
-from experiment import experiment_setup, experiment_loop, experiment_finish
+from experiment import experiment_setup, experiment_start, experiment_loop, experiment_finish
 import json
 
 app = Flask(__name__, template_folder='../client/public')
+
+pts = 'not initialised'
+session_ID = 'not initialised'
+iter_num = 100
+target_category = 'not initialised'
 
 # DATABASE
 def get_db_connection():
@@ -54,16 +59,25 @@ def home(path):
 
 @app.route("/start_experiment")
 def start():
+    global pts
+    global session_ID
+    global iter_num
+    global target_category
     return_str = ''
     try:
-        _ , session_ID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
+        tot_iterations = experiment_setup()
+        pts, session_ID, target_category, image_path, iter_num, count = experiment_start()
         insert_database(session_ID, target_category, iter_num, image_path)
         json_str = {
-            "tot_iterations": str(tot_iterations),
             "session_ID": str(session_ID),
-            "target_category": str(target_category)
+            "target_category": str(target_category),
+            "iter_num": str(iter_num),
+            "tot_iterations": str(tot_iterations),
+            "global_count": str(count)
         }
         return_str = json.dumps(json_str)
+        print(f"Iter num  : {iter_num}")
+        print(f"Session ID: {session_ID}")
     except AttributeError:
         print('''Error: 'dict' object has no attribute 'seek' (probably during the loading of the checkpoint,
         suspected because more than one person is accessing the experiment at the same time)''')
@@ -72,9 +86,20 @@ def start():
 
 @app.route("/running_experiment/<selected_frame>")
 def run(selected_frame):
-    _ , session_ID, target_category, image_path, iter_num = experiment_loop(selected_frame)
+    global pts
+    global session_ID
+    global iter_num
+    pts, session_ID, image_path, iter_num, count = experiment_loop(selected_frame, pts, session_ID, iter_num)
     insert_database(session_ID, target_category, iter_num, image_path)
-    return str(iter_num)
+    json_str = {
+        "iter_num": str(iter_num),
+        "session_ID": str(session_ID),
+        "global_count": str(count)
+    }
+    print(f"Iter num  : {iter_num}")
+    print(f"Session ID: {session_ID}")
+    return_str = json.dumps(json_str)
+    return str(count)
 
 @app.route("/done")
 def end():

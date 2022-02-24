@@ -18,17 +18,18 @@ ckpt_path = '../custom_models/fruits3.pt'
 cff_path = '../stylegan2-pytorch/factor_fruits3.pt'
 size = 128
 truncation = 1.5
+device='cuda'
 start_seed = 0
 degree = 20 # amount of variation for each eigvec
 repeats = 1 # number of times to run through all components
 num_components = 5 # number of eigen vectors to use
 tot_iterations = repeats * num_components
-target_category = 'apple'
+target_categories = ['apple', 'orange', 'grape']
 file_path_dump = '../client/public/images'
 file_path_selected = '../experiment_out/selected'
 # file_path_video = '../experiment_out/video_to_stream'
 
-session_ID = None
+count = 0 
 
 def clear_dir(path):
     if os.path.exists(path):
@@ -38,13 +39,13 @@ def clear_dir(path):
 
 ########################################## code from rosinality #########################
 
-def apply_factor(index, latent):
+def apply_factor(index, latent, dump_path, iter_num):
     direction = degree * eigvec[:, index].unsqueeze(0)
     vid_increment = 1 # increment degree for interpolation video
     pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
 
     # clear dump before every iteration
-    clear_dir(file_path_dump)
+    clear_dir(dump_path)
 
     frame_count = 0
     for pt in pts:
@@ -56,7 +57,7 @@ def apply_factor(index, latent):
         )
         grid = utils.save_image(
             img,
-            f"{file_path_dump}/iteration-{iter_num:02}_frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
+            f"{dump_path}/iteration-{iter_num:02}_frame-{frame_count:03}.png", # if you have more that 999 frames, increase the padding to :04
             normalize=True,
             value_range=(-1, 1), # updated to 'value_range' from 'range'
             nrow=1,
@@ -80,23 +81,10 @@ def line_interpolate(zs, steps):
 ###################################### end of code from dvschultz ################################
 
 
-def experiment_setup(channel_multiplier=2, device='cuda'):
-    global session_ID
-    global file_path_dump
-    global file_path_selected
-    global file_path_video
+def experiment_setup(channel_multiplier=2):
     global eigvec
-    global ckpt
     global g
     global trunc
-    global iter_num
-    global pts
-    # generate experiment ID
-    session_ID = binascii.hexlify(os.urandom(8)).decode()
-
-    file_path_dump += f'/{session_ID}'
-    file_path_selected += f'/{session_ID}'
-    # file_path_video += f'/{session_ID}'
 
     # setup for applying factors
     torch.set_grad_enabled(False)
@@ -105,55 +93,66 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     g = Generator(size, 512, 8, channel_multiplier=channel_multiplier).to(device)
     g.load_state_dict(ckpt["g_ema"], strict=False)
     trunc = g.mean_latent(4096)
-    
-    clear_dir(file_path_dump)
-    clear_dir(file_path_selected)
-    #clear_dir(file_path_video)
+
+    torch.manual_seed(start_seed) # set start seed
+
+    return tot_iterations
+
+def experiment_start():
+    # generate experiment ID
+    session_ID = binascii.hexlify(os.urandom(8)).decode()
+
+    target_category = target_categories[0]
+
+    clear_dir(f"{file_path_dump}/{session_ID}/")
+    clear_dir(f"{file_path_selected}/{session_ID}/")
+    #clear_dir(f"{file_path_video}/{session_ID}/")
 
     # generate starting latent vector
-    torch.manual_seed(start_seed)
     l = torch.randn(1, 512, device=device)
     l = g.get_latent(l)
 
-    # start experiment
     iter_num = 0
     active_comp = iter_num % num_components # active component
-    pts = apply_factor(index=active_comp, latent=l)
+    pts = apply_factor(index=active_comp, latent=l, dump_path=f"{file_path_dump}/{session_ID}", iter_num=iter_num)
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
     
     starting_image_num = math.floor(len(pts)/2)
-    starting_image_path = f"{file_path_dump}/iteration-{iter_num:02}_frame-{starting_image_num:03}.png"
+    starting_image_path = f"{file_path_dump}/{session_ID}/iteration-{iter_num:02}_frame-{starting_image_num:03}.png"
 
-    print("Experiment setup finished")
-    return pts, session_ID, target_category, starting_image_path, iter_num, tot_iterations
+    global count
+    count += 1
 
-def experiment_loop(selected_frame):
-    print("Experiment loop running with selected frame: ", selected_frame)
-    global iter_num
-    global pts
+    return pts, session_ID, target_category, starting_image_path, iter_num, count
+
+def experiment_loop(selected_frame, pts, session_ID, iter_num):
+    print(f"Experiment loop num {iter_num:02} running with selected frame: {selected_frame}")
     selected_frame = int(selected_frame)
-    print("Iteration #", iter_num)
     # move selected frame/image from dump to selected folder
-    selected_image_path = f"{file_path_selected}/iteration-{iter_num:02}_frame-{selected_frame:03}.png"
-    os.rename(f"{file_path_dump}/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
+    selected_image_path = f"{file_path_selected}/{session_ID}/iteration-{iter_num:02}_frame-{selected_frame:03}.png"
+    os.rename(f"{file_path_dump}/{session_ID}/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
     selected_image_path)
-    # start next iteration    
+    # start next iteration
     iter_num += 1
     l = pts[selected_frame]
     active_comp = iter_num % num_components # active component
-    pts = apply_factor(index=active_comp, latent=l)
+    pts = apply_factor(index=active_comp, latent=l, dump_path=f"{file_path_dump}/{session_ID}", iter_num=iter_num)
     # create video
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
-    return pts, session_ID, target_category, selected_image_path, iter_num
+
+    global count
+    count += 1
+
+    return pts, session_ID, selected_image_path, iter_num, count
 
 def experiment_finish():
     # saves selected images to progression.png
-    images = os.listdir(file_path_selected)
+    images = os.listdir(f'{file_path_selected}/{session_ID}')
     images.sort()
     cwd = os.getcwd()
-    os.chdir(file_path_selected) # change direcotory to where images are
+    os.chdir(f'{file_path_selected}/{session_ID}') # change direcotory to where images are
     images = [Image.open(im) for im in images]
     os.chdir(cwd) # change back to original directory
     #create two lists - one for heights and one for widths
@@ -166,7 +165,7 @@ def experiment_finish():
     for im in images:
         new_im.paste(im, (new_pos,0))
         new_pos += im.size[0]
-    new_im.save(f'{file_path_selected}/progression.png')
+    new_im.save(f'{file_path_selected}/{session_ID}/progression.png')
 
 # timing tests
 def time_this():
@@ -176,9 +175,10 @@ def time_this():
 
 if __name__ == "__main__":
     experiment_setup()
+    pts, session_ID, target_category, starting_image_path, iter_num, _ = experiment_start()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
-        experiment_loop(selected_frame)
+        pts, session_ID, selected_image_path, iter_num, _ = experiment_loop(selected_frame, pts, session_ID, iter_num)
     experiment_finish()
 
     # TIMING TESTS
