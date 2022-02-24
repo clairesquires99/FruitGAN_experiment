@@ -6,14 +6,16 @@ from torchvision import utils
 import binascii
 from PIL import Image
 import math
+import timeit
+import random
 
 import sys
 sys.path.append('stylegan2-pytorch') # necessary to get Generator from model
 from model import Generator
 
 # settings
-ckpt = 'custom_models/fruits3.pt' 
-cff = 'stylegan2-pytorch/factor_fruits3.pt'
+ckpt_path = 'custom_models/fruits3.pt' 
+cff_path = 'stylegan2-pytorch/factor_fruits3.pt'
 size = 128
 truncation = 1.5
 start_seed = 0
@@ -80,6 +82,9 @@ def line_interpolate(zs, steps):
 
 def experiment_setup(channel_multiplier=2, device='cuda'):
     global session_ID
+    global file_path_dump
+    global file_path_selected
+    global file_path_video
     global eigvec
     global ckpt
     global g
@@ -88,12 +93,15 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     global pts
     # generate experiment ID
     session_ID = binascii.hexlify(os.urandom(8)).decode()
-    print(session_ID)
+
+    file_path_dump += f'/{session_ID}'
+    file_path_selected += f'/{session_ID}'
+    # file_path_video += f'/{session_ID}'
 
     # setup for applying factors
     torch.set_grad_enabled(False)
-    eigvec = torch.load(cff)["eigvec"].to(device)
-    ckpt = torch.load(ckpt)
+    eigvec = torch.load(cff_path)["eigvec"].to(device)
+    ckpt = torch.load(ckpt_path)
     g = Generator(size, 512, 8, channel_multiplier=channel_multiplier).to(device)
     g.load_state_dict(ckpt["g_ema"], strict=False)
     trunc = g.mean_latent(4096)
@@ -104,7 +112,7 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
 
     # generate starting latent vector
     torch.manual_seed(start_seed)
-    l = torch.randn(1, 512, device='cuda')
+    l = torch.randn(1, 512, device=device)
     l = g.get_latent(l)
 
     # start experiment
@@ -160,9 +168,20 @@ def experiment_finish():
         new_pos += im.size[0]
     new_im.save(f'{file_path_selected}/progression.png')
 
+# timing tests
+def time_this():
+    for i in range(10):
+        arg = random.randrange(0, 39)
+        experiment_loop(arg)
+
 if __name__ == "__main__":
     experiment_setup()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
         experiment_loop(selected_frame)
     experiment_finish()
+
+    # TIMING TESTS
+    # experiment_setup()
+    # duration = timeit.timeit(time_this, number=1)
+    # print(duration)

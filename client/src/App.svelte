@@ -37,8 +37,9 @@
 			{:then}
 				{#if response}
 					<img
-						src="images/iteration-{String(iter_num).padStart(2, '0')}_
-				frame-{String(frame_num).padStart(3, '0')}.png"
+						src="images/{session_ID}/
+						iteration-{String(iter_num).padStart(2, '0')}_
+						frame-{String(frame_num).padStart(3, '0')}.png"
 						alt="experimental fruit"
 					/>
 				{/if}

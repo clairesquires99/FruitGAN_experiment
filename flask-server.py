@@ -43,6 +43,10 @@ def hello():
 def experiment():
     return render_template('experiment.html')
 
+@app.route("/error")
+def error():
+    return render_template('error_page.html')
+
 # Path for all the static files (compiled JS/CSS, etc.)
 @app.route("/<path:path>")
 def home(path):
@@ -50,14 +54,21 @@ def home(path):
 
 @app.route("/start_experiment")
 def start():
-    _ , session_ID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
-    insert_database(session_ID, target_category, iter_num, image_path)
-    return_str = {
-        "tot_iterations": tot_iterations,
-        "session_ID": session_ID,
-        "target_category": target_category
-    }
-    return json.dumps(return_str)
+    return_str = ''
+    try:
+        _ , session_ID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
+        insert_database(session_ID, target_category, iter_num, image_path)
+        json_str = {
+            "tot_iterations": str(tot_iterations),
+            "session_ID": str(session_ID),
+            "target_category": str(target_category)
+        }
+        return_str = json.dumps(json_str)
+    except AttributeError:
+        print('''Error: 'dict' object has no attribute 'seek' (probably during the loading of the checkpoint,
+        suspected because more than one person is accessing the experiment at the same time)''')
+    return return_str
+
 
 @app.route("/running_experiment/<selected_frame>")
 def run(selected_frame):
