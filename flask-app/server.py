@@ -7,6 +7,7 @@ import json
 app = Flask(__name__, template_folder='../client/public')
 
 # DATABASE
+write_to_database = False
 def get_db_connection():
     conn = sql.connect('experiment.db')
     conn.row_factory = sql.Row
@@ -57,7 +58,8 @@ def start():
     return_str = ''
     try:
         _ , session_ID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
-        insert_database(session_ID, target_category, iter_num, image_path)
+        if write_to_database:
+            insert_database(session_ID, target_category, iter_num, image_path)
         json_str = {
             "tot_iterations": str(tot_iterations),
             "session_ID": str(session_ID),
@@ -73,7 +75,8 @@ def start():
 @app.route("/running_experiment/<selected_frame>")
 def run(selected_frame):
     _ , session_ID, target_category, image_path, iter_num = experiment_loop(selected_frame)
-    insert_database(session_ID, target_category, iter_num, image_path)
+    if write_to_database:
+        insert_database(session_ID, target_category, iter_num, image_path)
     return str(iter_num)
 
 @app.route("/done")
