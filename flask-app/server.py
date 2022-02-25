@@ -7,7 +7,7 @@ import json
 app = Flask(__name__, template_folder='../client/public')
 
 # DATABASE
-write_to_database = False
+write_to_database = True
 def get_db_connection():
     conn = sql.connect('experiment.db')
     conn.row_factory = sql.Row
