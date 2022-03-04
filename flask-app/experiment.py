@@ -13,6 +13,8 @@ import sys
 sys.path.insert(0, '/home/csquires/FruitGAN_experiment/stylegan2-pytorch') # necessary to get Generator from model
 from model import Generator
 
+
+
 print("experiment.py is being run")
 
 # settings
