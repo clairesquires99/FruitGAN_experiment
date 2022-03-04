@@ -16,6 +16,11 @@ h1 {
 	text-align: center;
 }
 
+h6 {
+	margin-top: 0.5rem !important;
+	margin-bottom: 0.3rem !important;
+}
+
 p {
 	margin-bottom: 0.2rem !important;
 }

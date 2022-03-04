@@ -13,6 +13,8 @@ import sys
 sys.path.insert(0, '/home/csquires/FruitGAN_experiment/stylegan2-pytorch') # necessary to get Generator from model
 from model import Generator
 
+print("experiment.py is being run")
+
 # settings
 ckpt_path = '../custom_models/fruits3.pt' 
 cff_path = '../stylegan2-pytorch/factor_fruits3.pt'
@@ -40,6 +42,8 @@ def clear_dir(path):
 
 def apply_factor(index, latent):
     direction = degree * eigvec[:, index].unsqueeze(0)
+    print("\nDirection")
+    print(direction[0][0:5])
     vid_increment = 1 # increment degree for interpolation video
     pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
 
@@ -79,7 +83,6 @@ def line_interpolate(zs, steps):
 
 ###################################### end of code from dvschultz ################################
 
-
 def experiment_setup(channel_multiplier=2, device='cuda'):
     global session_ID
     global file_path_dump
@@ -101,14 +104,17 @@ def experiment_setup(channel_multiplier=2, device='cuda'):
     ckpt = torch.load(ckpt_path)
     g = Generator(size, 512, 8, channel_multiplier=channel_multiplier).to(device)
     g.load_state_dict(ckpt["g_ema"], strict=False)
-    trunc = g.mean_latent(4096)
-    
+    torch.manual_seed(start_seed)
+    mean_latent = g.mean_latent(10000)
+    trunc = mean_latent
+    print("\nMean Latent")
+    print(mean_latent[0][0:5])
+
     clear_dir(f"{file_path_dump}/{session_ID}")
     clear_dir(f"{file_path_selected}/{session_ID}")
     #clear_dir(f"{file_path_video}/{session_ID}")
 
     # generate starting latent vector
-    torch.manual_seed(start_seed)
     l = torch.randn(1, 512, device=device)
     l = g.get_latent(l)
 

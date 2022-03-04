@@ -39,6 +39,10 @@ def insert_database(sessionID, target_category, iter_num, image_path):
 def hello():
     return render_template('index.html')
 
+@app.route("/pis")
+def pis():
+    return render_template('pis.html')
+
 # Path for our main Svelte page (experiment)
 @app.route("/experiment")
 def experiment():

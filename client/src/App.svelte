@@ -64,5 +64,15 @@
 		<p class="small text-muted">Iteration: {iter_num}</p>
 		<p class="small text-muted">Total iterations: {tot_iterations}</p>
 		<p class="small text-muted">Session ID: {session_ID}</p>
+		<div class="progress mt-5">
+			<div
+				class="progress-bar progress-bar-striped"
+				role="progressbar"
+				style="width: {(iter_num / tot_iterations) * 100}%"
+				aria-valuenow={iter_num}
+				aria-valuemin="0"
+				aria-valuemax={tot_iterations}
+			/>
+		</div>
 	</div>
 </div>
