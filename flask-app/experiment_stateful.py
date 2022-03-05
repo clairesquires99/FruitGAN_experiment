@@ -8,45 +8,29 @@ from PIL import Image
 import math
 import timeit
 import random
-import json
 
 import sys
 sys.path.insert(0, '/home/csquires/FruitGAN_experiment/stylegan2-pytorch') # necessary to get Generator from model
 from model import Generator
 
+print("experiment.py is being run")
+
 # settings
-device = 'cuda'
 ckpt_path = '../custom_models/fruits3.pt' 
 cff_path = '../stylegan2-pytorch/factor_fruits3.pt'
-states_path = '../states/'
 size = 128
 truncation = 1.5
-# start_seed = 2
+start_seed = 2
 degree = 20 # amount of variation for each eigvec
-repeats = 1 # number of times to run through all components
+repeats = 3 # number of times to run through all components
 num_components = 5 # number of eigen vectors to use
 tot_iterations = repeats * num_components
-target_categories = ['apple', 'orange', 'grape']
-# target_category = 'apple'
+target_category = 'apple'
 file_path_dump = '../client/public/images'
 file_path_selected = '../experiment_out/selected'
 # file_path_video = '../experiment_out/video_to_stream'
 
-# session_ID = None
-
-# setup for applying factors
-torch.manual_seed(0)
-torch.set_grad_enabled(False)
-eigvec = torch.load(cff_path)["eigvec"].to(device)
-ckpt = torch.load(ckpt_path)
-g = Generator(size, 512, 8, 2).to(device)
-g.load_state_dict(ckpt["g_ema"], strict=False)
-mean_latent = g.mean_latent(10000)
-trunc = mean_latent
-# print("\nMean Latent")
-# print(mean_latent[0][0:5])
-
-
+session_ID = None
 
 def clear_dir(path):
     if os.path.exists(path):
@@ -56,10 +40,10 @@ def clear_dir(path):
 
 ########################################## code from rosinality #########################
 
-def apply_factor(session_ID, iter_num, index, latent):
+def apply_factor(index, latent):
     direction = degree * eigvec[:, index].unsqueeze(0)
-    # print("\nDirection")
-    # print(direction[0][0:5])
+    print("\nDirection")
+    print(direction[0][0:5])
     vid_increment = 1 # increment degree for interpolation video
     pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
 
@@ -99,26 +83,45 @@ def line_interpolate(zs, steps):
 
 ###################################### end of code from dvschultz ################################
 
-def experiment_setup():
+def experiment_setup(channel_multiplier=2, device='cuda'):
+    global session_ID
+    global file_path_dump
+    global file_path_selected
+    global file_path_video
+    global eigvec
+    global ckpt
+    global g
+    global trunc
+    global iter_num
+    global pts
     # generate experiment ID
     session_ID = binascii.hexlify(os.urandom(20)).decode()
     print(session_ID)
+
+    # setup for applying factors
+    torch.set_grad_enabled(False)
+    eigvec = torch.load(cff_path)["eigvec"].to(device)
+    ckpt = torch.load(ckpt_path)
+    g = Generator(size, 512, 8, channel_multiplier=channel_multiplier).to(device)
+    g.load_state_dict(ckpt["g_ema"], strict=False)
+    torch.manual_seed(start_seed)
+    mean_latent = g.mean_latent(10000)
+    trunc = mean_latent
+    print("\nMean Latent")
+    print(mean_latent[0][0:5])
 
     clear_dir(f"{file_path_dump}/{session_ID}")
     clear_dir(f"{file_path_selected}/{session_ID}")
     #clear_dir(f"{file_path_video}/{session_ID}")
 
     # generate starting latent vector
-    start_seed = random.randint(0,1000)
-    torch.manual_seed(start_seed)
     l = torch.randn(1, 512, device=device)
     l = g.get_latent(l)
 
     # start experiment
-    target_category = random.choice(target_categories)
     iter_num = 0
     active_comp = iter_num % num_components # active component
-    pts = apply_factor(session_ID, iter_num, index=active_comp, latent=l)
+    pts = apply_factor(index=active_comp, latent=l)
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
     
@@ -126,49 +129,30 @@ def experiment_setup():
     starting_image_path = f"{file_path_dump}/{session_ID}/iteration-00_frame-{starting_image_num:03}.png"
     shutil.copyfile(starting_image_path,f"{file_path_selected}/{session_ID}/0seed.png")
 
-    json_obj = {
-        "session_ID": session_ID,
-        "target_category": target_category,
-        "image_path": starting_image_path,
-        "iter_num": iter_num,
-        "tot_iterations": tot_iterations
-    }
-
-    torch.save(pts, f'{states_path}{session_ID}.pt')
-
     print("Experiment setup finished")
-    return json.dumps(json_obj), session_ID, target_category, starting_image_path, iter_num, tot_iterations
+    return pts, session_ID, target_category, starting_image_path, iter_num, tot_iterations
 
-def experiment_loop(session_ID, selected_frame, iter_num, target_category):
-    # print("Experiment loop running with selected frame: ", selected_frame)
+def experiment_loop(selected_frame):
+    print("Experiment loop running with selected frame: ", selected_frame)
+    global iter_num
+    global pts
     selected_frame = int(selected_frame)
-    iter_num = int(iter_num)
-    # print("Iteration #", iter_num)
+    print("Iteration #", iter_num)
     # move selected frame/image from dump to selected folder
     selected_image_path = f"{file_path_selected}/{session_ID}/iteration-{iter_num:02}_frame-{selected_frame:03}.png"
     os.rename(f"{file_path_dump}/{session_ID}/iteration-{iter_num:02}_frame-{selected_frame:03}.png",
     selected_image_path)
     # start next iteration
     iter_num += 1
-    pts = torch.load(f'{states_path}{session_ID}.pt')
     l = pts[selected_frame]
     active_comp = iter_num % num_components # active component
-    pts = apply_factor(session_ID, iter_num,index=active_comp, latent=l)
-    torch.save(pts, f'{states_path}{session_ID}.pt')
+    pts = apply_factor(index=active_comp, latent=l)
     # create video
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
+    return pts, session_ID, target_category, selected_image_path, iter_num
 
-    json_obj = {
-        "session_ID": session_ID,
-        "target_category": target_category,
-        "image_path": selected_image_path,
-        "iter_num": iter_num,
-        "tot_iterations": tot_iterations
-    }
-    return json.dumps(json_obj), session_ID, iter_num
-
-def experiment_finish(session_ID):
+def experiment_finish():
     # saves selected images to progression.png
     if os.path.exists(f"{file_path_dump}/{session_ID}"):
         shutil.rmtree(f"{file_path_dump}/{session_ID}")
@@ -190,9 +174,6 @@ def experiment_finish(session_ID):
         new_pos += im.size[0]
     new_im.save(f'{file_path_selected}/{session_ID}/progression.png')
 
-    # cleanup
-    os.remove(f'{states_path}{session_ID}.pt')
-
 # timing tests
 def time_this():
     for i in range(10):
@@ -200,11 +181,11 @@ def time_this():
         experiment_loop(arg)
 
 if __name__ == "__main__":
-    _ , session_ID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
+    experiment_setup()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
-        _ , session_ID, iter_num = experiment_loop(session_ID, selected_frame, iter_num)
-    experiment_finish(session_ID)
+        experiment_loop(selected_frame)
+    experiment_finish()
 
     # TIMING TESTS
     # experiment_setup()
