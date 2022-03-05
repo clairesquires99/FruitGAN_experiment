@@ -9,6 +9,8 @@ if __name__ == "__main__":
     clear("client/public/images/")
     os.remove("flask-app/experiment.db")
     clear("experiment_out/selected/")
+    clear("states/")
+    os.mkdir("states/")
 
 
 

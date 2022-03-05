@@ -13,18 +13,25 @@
 		response = fetch("./start_experiment")
 			.then((data) => data.json())
 			.then((data) => {
-				tot_iterations = data.tot_iterations;
 				session_ID = data.session_ID;
+				iter_num = data.iter_num;
+				tot_iterations = data.tot_iterations;
 				target_category = data.target_category;
 			});
 	});
 
 	let run_experiment = (arg) => {
 		if (iter_num < tot_iterations) {
-			iter_num++;
-			response = fetch("./running_experiment/" + arg);
+			response = fetch(
+				`./running_experiment?session_ID=${session_ID}&selected_frame=${arg}`
+			)
+				.then((data) => data.json())
+				.then((data) => {
+					session_ID = data.session_ID;
+					iter_num = data.iter_num;
+				});
 		} else {
-			window.location.href = "./done";
+			window.location.href = `./done?session_ID=${session_ID}`;
 		}
 	};
 </script>
