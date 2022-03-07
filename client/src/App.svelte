@@ -2,12 +2,13 @@
 	import { onMount } from "svelte";
 	import { Moon } from "svelte-loading-spinners";
 
-	let frame_num = 20;
 	let iter_num = 0;
 	let tot_iterations;
 	let response;
 	let target_category = "loading..."; //place holder
 	let session_ID;
+	let tot_frames;
+	let frame_num = 0; //initialise slider position
 
 	onMount(() => {
 		response = fetch("./start_experiment")
@@ -17,6 +18,7 @@
 				iter_num = data.iter_num;
 				tot_iterations = data.tot_iterations;
 				target_category = data.target_category;
+				tot_frames = data.tot_frames;
 			});
 	});
 
@@ -29,6 +31,7 @@
 				.then((data) => {
 					session_ID = data.session_ID;
 					iter_num = data.iter_num;
+					tot_frames = data.tot_frames;
 				});
 		} else {
 			window.location.href = `./done?session_ID=${session_ID}`;
@@ -62,7 +65,7 @@
 			type="range"
 			bind:value={frame_num}
 			min="0"
-			max="39"
+			max={tot_frames}
 		/>
 		<p class="small text-muted">Slider is at {frame_num}</p>
 		<button class="btn btn-primary" on:click={run_experiment(frame_num)}

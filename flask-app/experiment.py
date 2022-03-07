@@ -9,6 +9,7 @@ import math
 import timeit
 import random
 import json
+from utils import *
 
 import sys
 sys.path.insert(0, '/home/csquires/FruitGAN_experiment/stylegan2-pytorch') # necessary to get Generator from model
@@ -21,18 +22,14 @@ cff_path = '../stylegan2-pytorch/factor_fruits3.pt'
 states_path = '../states/'
 size = 128
 truncation = 1.5
-# start_seed = 2
 degree = 20 # amount of variation for each eigvec
 repeats = 1 # number of times to run through all components
 num_components = 5 # number of eigen vectors to use
 tot_iterations = repeats * num_components
 target_categories = ['apple', 'orange', 'grape']
-# target_category = 'apple'
 file_path_dump = '../client/public/images'
 file_path_selected = '../experiment_out/selected'
 # file_path_video = '../experiment_out/video_to_stream'
-
-# session_ID = None
 
 # setup for applying factors
 torch.manual_seed(0)
@@ -41,27 +38,53 @@ eigvec = torch.load(cff_path)["eigvec"].to(device)
 ckpt = torch.load(ckpt_path)
 g = Generator(size, 512, 8, 2).to(device)
 g.load_state_dict(ckpt["g_ema"], strict=False)
-mean_latent = g.mean_latent(10000)
+mean_latent, sd_latent = g.mean_sd(10000)
 trunc = mean_latent
-# print("\nMean Latent")
-# print(mean_latent[0][0:5])
+
+r = euclidean_dist(mean_latent, (mean_latent + (2 * sd_latent))) # 2 standard deviations away from the mean
+
+print("Mean latent : ", mean_latent[0][:5])
+print("Mean + 2sds : ", r)
 
 
+def dunno(index, latent):
+    e = eigvec[:, index].unsqueeze(0) # unit eigen vector
+    pts = [latent]
+    print("Start latent: ", latent[0][:5])
+    # positive direction
+    new_pt_pos = latent + e
+    d = euclidean_dist(new_pt_pos, mean_latent)
+    print(f"d < r = {d.item():.4f} < {r.item():.4f} = {(d < r).item()}")
+    while d < r:
+        pts += [new_pt_pos] # append new point to right
+        new_pt_pos += e
+        d = euclidean_dist(new_pt_pos, mean_latent)
+        print(f"d < r = {d.item():.4f} < {r.item():.4f} = {(d < r).item()}")
 
-def clear_dir(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    if not os.path.exists(path):
-        os.makedirs(path)
+    # negative direction
+    new_pt_neg = latent - e
+    d = euclidean_dist(new_pt_neg, mean_latent)
+    print(f"\nd < r = {d.item():.4f} < {r.item():.4f} = {(d < r).item()}")
+    while d < r:
+        pts = [new_pt_neg] + pts # append new point to left
+        new_pt_neg -= e
+        d = euclidean_dist(new_pt_neg, mean_latent)
+        print(f"d < r = {d.item():.4f} < {r.item():.4f} = {(d < r).item()}")
+
+    return pts
+
+
 
 ########################################## code from rosinality #########################
 
 def apply_factor(session_ID, iter_num, index, latent):
-    direction = degree * eigvec[:, index].unsqueeze(0)
-    # print("\nDirection")
-    # print(direction[0][0:5])
-    vid_increment = 1 # increment degree for interpolation video
-    pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
+    pts = dunno(index, latent)
+    left = pts[0]
+    right = pts [-1]
+    pts = line_interpolate([left, latent, right], 25)
+    # direction = degree * eigvec[:, index].unsqueeze(0)
+    # vid_increment = 1 # increment degree for interpolation video
+    # pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
 
     # clear dump before every iteration
     clear_dir(f"{file_path_dump}/{session_ID}")
@@ -110,6 +133,7 @@ def experiment_setup():
 
     # generate starting latent vector
     start_seed = random.randint(0,1000)
+    start_seed = 0
     torch.manual_seed(start_seed)
     l = torch.randn(1, 512, device=device)
     l = g.get_latent(l)
@@ -131,7 +155,8 @@ def experiment_setup():
         "target_category": target_category,
         "image_path": starting_image_path,
         "iter_num": iter_num,
-        "tot_iterations": tot_iterations
+        "tot_iterations": tot_iterations,
+        "tot_frames": len(pts)-1
     }
 
     torch.save(pts, f'{states_path}{session_ID}.pt')
@@ -164,7 +189,8 @@ def experiment_loop(session_ID, selected_frame, iter_num, target_category):
         "target_category": target_category,
         "image_path": selected_image_path,
         "iter_num": iter_num,
-        "tot_iterations": tot_iterations
+        "tot_iterations": tot_iterations,
+        "tot_frames": len(pts)-1
     }
     return json.dumps(json_obj), session_ID, iter_num
 
@@ -203,7 +229,7 @@ if __name__ == "__main__":
     _ , session_ID, target_category, image_path, iter_num, tot_iterations = experiment_setup()
     while iter_num < tot_iterations:
         selected_frame = int(input("selected frame: "))
-        _ , session_ID, iter_num = experiment_loop(session_ID, selected_frame, iter_num)
+        _ , session_ID, iter_num = experiment_loop(session_ID, selected_frame, iter_num, target_category)
     experiment_finish(session_ID)
 
     # TIMING TESTS
