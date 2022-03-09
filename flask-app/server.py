@@ -17,9 +17,9 @@ write_to_database = True
 def hello():
     return render_template('index.html')
 
-@app.route("/pis")
+@app.route("/information")
 def pis():
-    return render_template('pis.html')
+    return render_template('information.html')
 
 # Path for our main Svelte page (experiment)
 @app.route("/experiment")

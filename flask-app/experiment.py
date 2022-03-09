@@ -47,7 +47,7 @@ print("Mean latent : ", mean_latent[0][:5])
 print("Mean + 2sds : ", r)
 
 
-def dunno(index, latent):
+def get_points(index, latent):
     e = eigvec[:, index].unsqueeze(0) # unit eigen vector
     pts = [latent]
     print("Start latent: ", latent[0][:5])
@@ -78,10 +78,10 @@ def dunno(index, latent):
 ########################################## code from rosinality #########################
 
 def apply_factor(session_ID, iter_num, index, latent):
-    pts = dunno(index, latent)
+    pts = get_points(index, latent)
     left = pts[0]
     right = pts [-1]
-    pts = line_interpolate([left, latent, right], 25)
+    pts = line_interpolate([left, latent, right], 50)
     # direction = degree * eigvec[:, index].unsqueeze(0)
     # vid_increment = 1 # increment degree for interpolation video
     # pts = line_interpolate([latent-direction, latent+direction], int((degree*2)/vid_increment))
@@ -133,7 +133,7 @@ def experiment_setup():
 
     # generate starting latent vector
     start_seed = random.randint(0,1000)
-    start_seed = 0
+    # start_seed = 0
     torch.manual_seed(start_seed)
     l = torch.randn(1, 512, device=device)
     l = g.get_latent(l)
