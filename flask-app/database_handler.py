@@ -11,13 +11,18 @@ def convertToBinaryData(filename):
         binaryData = file.read()
     return binaryData
 
-def insert_database(sessionID, target_category, iter_num, image_path):
+def insert_database(obj):
+    session_ID = obj['session_ID'] 
+    target_category = obj['target_category']
+    chain_num = obj['chain_num'] 
+    iter_num = obj['iter_num']
+    image_path = obj['image_path']
     image_blob = convertToBinaryData(image_path)
     conn = get_db_connection()
     try:
         conn.execute(f'INSERT INTO results \
         (session_ID, target_category, iteration_num, image) \
-        VALUES (?, ?, ?, ?)',(sessionID, target_category, iter_num, image_blob))
+        VALUES (?, ?, ?, ?)',(sessionID, target_category, chain_num, iter_num, image_blob))
         conn.commit()
     except Exception as e:
         conn.rollback()
@@ -46,6 +51,8 @@ def get_state(session_ID):
     query = """SELECT json_obj FROM states WHERE session_ID = ?"""
     cusor.execute(query, (session_ID,))
     rows = cusor.fetchall()
-    if len(rows) != 1:
+    if len(rows) == 0:
+        print(f"WARNING: something has gone wrong in the database, no results are being returned for session_ID {session_ID}")
+    elif len(rows) != 1:
         print(f"WARNING: something has gone wrong in the database, there should only be one entry for session_ID {session_ID}")
     return rows[0][0]
