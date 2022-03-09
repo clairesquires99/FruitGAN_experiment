@@ -7,8 +7,9 @@ def clear(path):
  
 if __name__ == "__main__":
     clear("client/public/images/")
-    os.remove("flask-app/experiment.db")
-    clear("experiment_out/selected/")
+    if os.path.exists("flask-app/experiment.db"):
+        os.remove("flask-app/experiment.db")
+    clear("results")
     clear("states/")
     os.mkdir("states/")
 

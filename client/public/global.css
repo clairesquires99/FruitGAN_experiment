@@ -17,7 +17,7 @@ h1 {
 }
 
 h6 {
-	margin-top: 0.5rem !important;
+	margin-top: 0.6rem !important;
 	margin-bottom: 0.3rem !important;
 }
 
@@ -68,6 +68,12 @@ button:focus {
 /* .container-lg {
 	background-color: #E6E6FA;
 } */
+
+.text-700 {
+	max-width: 700px;
+	margin-left: auto;
+	margin-right: auto;
+}
 
 .cont {
 	text-align: center;

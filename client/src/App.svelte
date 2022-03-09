@@ -2,16 +2,19 @@
 	import { onMount } from "svelte";
 	import { Moon } from "svelte-loading-spinners";
 
+	let chain_num;
+	let tot_chains;
 	let iter_num = 0;
 	let tot_iterations;
 	let response;
 	let target_category = "loading..."; //place holder
 	let session_ID;
 	let tot_frames;
+	let expected_tot_frames = 100; // randomise slider position
 	let frame_num = 0; //initialise slider position
 
-	onMount(() => {
-		response = fetch("./start_experiment")
+	async function start_experiment() {
+		return fetch(`./start_experiment?session_ID=${session_ID}`)
 			.then((data) => data.json())
 			.then((data) => {
 				session_ID = data.session_ID;
@@ -20,23 +23,53 @@
 				target_category = data.target_category;
 				tot_frames = data.tot_frames;
 			});
+	}
+
+	onMount(async () => {
+		await fetch("./get_ID")
+			.then((data) => data.json())
+			.then((data) => {
+				session_ID = data.session_ID;
+				target_category = data.target_category;
+				tot_chains = data.tot_chains;
+				chain_num = data.chain_num;
+			});
+		response = start_experiment();
+		frame_num = Math.floor(Math.random() * expected_tot_frames);
 	});
 
-	let run_experiment = (arg) => {
-		if (iter_num < tot_iterations) {
-			response = fetch(
-				`./running_experiment?session_ID=${session_ID}&selected_frame=${arg}`
-			)
-				.then((data) => data.json())
-				.then((data) => {
-					session_ID = data.session_ID;
-					iter_num = data.iter_num;
-					tot_frames = data.tot_frames;
-				});
-		} else {
-			window.location.href = `./done?session_ID=${session_ID}`;
+	async function run_experiment(arg) {
+		if (chain_num < tot_chains) {
+			if (iter_num < tot_iterations) {
+				response = fetch(
+					`./running_experiment?session_ID=${session_ID}&selected_frame=${arg}`
+				)
+					.then((data) => data.json())
+					.then((data) => {
+						session_ID = data.session_ID;
+						iter_num = data.iter_num;
+						tot_frames = data.tot_frames;
+					});
+				frame_num = Math.floor(Math.random() * expected_tot_frames);
+			} else {
+				await fetch(`./end_chain?session_ID=${session_ID}`)
+					.then((data) => data.json())
+					.then((data) => {
+						session_ID = data.session_ID;
+						target_category = data.target_category;
+						tot_chains = data.tot_chains;
+						chain_num = data.chain_num;
+					});
+				frame_num = Math.floor(Math.random() * expected_tot_frames);
+
+				if (chain_num == tot_chains) {
+					window.location.href = `./done?session_ID=${session_ID}`;
+				}
+				response = start_experiment();
+				frame_num = Math.floor(Math.random() * expected_tot_frames);
+			}
 		}
-	};
+	}
 </script>
 
 <div class="container-lg d-flex justify-content-center">
@@ -47,7 +80,7 @@
 			{:then}
 				{#if response}
 					<img
-						src="images/{session_ID}/
+						src="images/{session_ID}/{target_category}{chain_num}/
 						iteration-{String(iter_num).padStart(2, '0')}_
 						frame-{String(frame_num).padStart(3, '0')}.png"
 						alt="experimental fruit"
@@ -74,6 +107,8 @@
 		<p class="small text-muted">Iteration: {iter_num}</p>
 		<p class="small text-muted">Total iterations: {tot_iterations}</p>
 		<p class="small text-muted">Session ID: {session_ID}</p>
+		<p class="small text-muted">Chain number: {chain_num}</p>
+		<p class="small text-muted">Total chains: {tot_chains}</p>
 		<div class="progress mt-5">
 			<div
 				class="progress-bar progress-bar-striped"
