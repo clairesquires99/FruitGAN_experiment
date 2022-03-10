@@ -9,7 +9,7 @@ from flask import request
 app = Flask(__name__, template_folder='../client/public')
 
 # DATABASE
-write_to_database = False
+write_to_database = True
 
 # ROUTING
 # Path for start page
@@ -48,6 +48,7 @@ def start():
     obj = json.loads(get_state(session_ID))
     json_obj = experiment_setup(session_ID, obj['target_category'], obj['chain_num'])[0]
     save_state(session_ID, json_obj)
+    obj = json.loads(json_obj)
     if write_to_database:
         insert_database(obj)
     return json_obj
@@ -79,4 +80,4 @@ def done():
     return render_template('done.html')
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0')

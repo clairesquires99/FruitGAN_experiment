@@ -10,7 +10,7 @@
 	let target_category = "loading..."; //place holder
 	let session_ID;
 	let tot_frames;
-	let expected_tot_frames = 100; // randomise slider position
+	let expected_tot_frames = 99; // randomise slider position
 	let frame_num = 0; //initialise slider position
 
 	async function start_experiment() {
@@ -35,7 +35,7 @@
 				chain_num = data.chain_num;
 			});
 		response = start_experiment();
-		frame_num = Math.floor(Math.random() * expected_tot_frames);
+		frame_num = Math.floor(expected_tot_frames / 2);
 	});
 
 	async function run_experiment(arg) {
@@ -59,14 +59,14 @@
 						target_category = data.target_category;
 						tot_chains = data.tot_chains;
 						chain_num = data.chain_num;
+						iter_num = 0; //stops the progress bar jumping
 					});
-				frame_num = Math.floor(Math.random() * expected_tot_frames);
 
 				if (chain_num == tot_chains) {
 					window.location.href = `./done?session_ID=${session_ID}`;
 				}
 				response = start_experiment();
-				frame_num = Math.floor(Math.random() * expected_tot_frames);
+				frame_num = Math.floor(expected_tot_frames / 2);
 			}
 		}
 	}
@@ -113,7 +113,9 @@
 			<div
 				class="progress-bar progress-bar-striped"
 				role="progressbar"
-				style="width: {(iter_num / tot_iterations) * 100}%"
+				style="width: {((chain_num * tot_iterations + iter_num) /
+					(tot_chains * tot_iterations)) *
+					100}%"
 				aria-valuenow={iter_num}
 				aria-valuemin="0"
 				aria-valuemax={tot_iterations}

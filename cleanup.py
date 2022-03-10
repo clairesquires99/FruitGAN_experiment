@@ -10,6 +10,7 @@ if __name__ == "__main__":
     if os.path.exists("flask-app/experiment.db"):
         os.remove("flask-app/experiment.db")
     clear("results")
+    os.mkdir("results")
     clear("states/")
     os.mkdir("states/")
 

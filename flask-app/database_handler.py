@@ -21,8 +21,8 @@ def insert_database(obj):
     conn = get_db_connection()
     try:
         conn.execute(f'INSERT INTO results \
-        (session_ID, target_category, iteration_num, image) \
-        VALUES (?, ?, ?, ?)',(sessionID, target_category, chain_num, iter_num, image_blob))
+        (session_ID, target_category, chain_num, iteration_num, image) \
+        VALUES (?, ?, ?, ?, ?)',(session_ID, target_category, chain_num, iter_num, image_blob))
         conn.commit()
     except Exception as e:
         conn.rollback()
@@ -32,6 +32,8 @@ def insert_database(obj):
         conn.close()
 
 def save_state(session_ID, json_obj):
+    json_ID = json.loads(json_obj)['session_ID']
+    assert session_ID == json_ID, f"The session_ID in the argument {session_ID} does not match the session_ID in the json_obj {json_ID}"
     conn = get_db_connection()
     try:
         conn.execute('INSERT OR REPLACE INTO states \
