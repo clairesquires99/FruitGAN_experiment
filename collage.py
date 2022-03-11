@@ -42,7 +42,7 @@ def get_images_vh(path):
     os.chdir(cwd) # change back to original directory
     return images
 
-def merge_images_vertically(imgs, name):
+def merge_images_vertically(imgs, file_name):
     #create two lists - one for heights and one for widths
     widths, heights = zip(*(i.size for i in imgs))
     width_of_new_image = min(widths)  #take minimum width
@@ -53,9 +53,9 @@ def merge_images_vertically(imgs, name):
     for im in imgs:
         new_im.paste(im, (0, new_pos))
         new_pos += im.size[1]
-    new_im.save('collage-'+name+'.png')   
+    new_im.save(file_name)   
 
-def merge_images_horizontally(imgs):
+def merge_images_horizontally(imgs, file_name):
     #create two lists - one for heights and one for widths
     widths, heights = zip(*(i.size for i in imgs))
     width_of_new_image = sum(widths)
@@ -66,9 +66,20 @@ def merge_images_horizontally(imgs):
     for im in imgs:
         new_im.paste(im, (new_pos,0))
         new_pos += im.size[0]
-    new_im.save('collage.png') #change the filename if you want
+    new_im.save(file_name) #change the filename if you want
+
+def merge_progressions(path):
+    # vertically stacks chains of all experiments for each session
+    sessions = os.listdir(path)
+    categories = ['apple0', 'apple1', 'apple2', 'orange0', 'orange1', 'orange2', 'grape0', 'grape1', 'grape2']
+    for s in sessions:
+        images = []
+        for c in categories:
+            if os.path.exists(f"{path}{s}/{c}/progression.png"):
+                images.append(Image.open(f"{path}{s}/{c}/progression.png"))
+        merge_images_vertically(images, f"{path}{s}/progressions_{s}.png")
+
 
 if __name__ == '__main__':
-    images = get_images_vh("experiment_out/selected_target-orange_seed-1_d-20_c-6")
-    merge_images_horizontally(images)
+    merge_progressions("test_runs/results_rea2/")
     

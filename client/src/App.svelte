@@ -85,15 +85,27 @@
 
 <div class="container-lg d-flex justify-content-center">
 	<div class="container-md cont">
-		<div class="alert-cont">
-			{#await response then}
-				{#if iter_num == 0 && exp_num != 0}
-					<div class="alert alert-primary" role="alert">
-						Warning: the word changed!
-					</div>
-				{/if}
-			{/await}
-		</div>
+		<!-- <div
+			class="toast align-items-center text-white bg-primary border-0"
+			role="alert"
+			aria-live="assertive"
+			aria-atomic="true"
+		>
+			<div class="d-flex">
+				<div class="toast-body">Hello, world! This is a toast message.</div>
+				<button
+					type="button"
+					class="btn-close btn-close-white me-2 m-auto"
+					data-bs-dismiss="toast"
+					aria-label="Close"
+				/>
+			</div>
+		</div> -->
+		{#await response then}
+			{#if iter_num == 0 && exp_num != 0}
+				<p>hello</p>
+			{/if}
+		{/await}
 
 		<div class="cont-fruit-image">
 			{#await response}
