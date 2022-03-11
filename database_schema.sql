@@ -6,7 +6,13 @@
     image BLOB NOT NULL
 );
 
+-- Store session states (under the hood stuff)
 CREATE TABLE states (
     session_ID VARCHAR(40) PRIMARY KEY,
     json_obj TEXT
+);
+
+-- Store experiment session_IDs of participants that completed the experiment
+CREATE TABLE completed (
+    session_ID VARCHAR(40) PRIMARY KEY
 );

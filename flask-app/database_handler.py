@@ -59,3 +59,17 @@ def get_state(session_ID):
     elif len(rows) != 1:
         print(f"WARNING: something has gone wrong in the database, there should only be one entry for session_ID {session_ID}")
     return rows[0][0]
+
+def insert_completed(session_ID):
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO completed \
+        (session_ID) \
+        VALUES (?);',(session_ID,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print("ERROR: could not insert data into table 'completed'")
+        print(e)
+    finally:
+        conn.close()

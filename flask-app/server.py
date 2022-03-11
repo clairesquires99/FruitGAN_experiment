@@ -2,7 +2,7 @@
 from flask import Flask, send_from_directory, redirect, render_template, request, flash
 import sqlite3 as sql
 from experiment import generate_ID, experiment_setup, experiment_loop, experiment_finish
-from database_handler import insert_database, save_state, get_state
+from database_handler import insert_database, save_state, get_state, insert_completed
 import json
 from flask import request
 
@@ -77,6 +77,8 @@ def end_chain():
 
 @app.route("/done")
 def done():
+    session_ID = request.args.get("session_ID")
+    insert_completed(session_ID)
     return render_template('done.html')
 
 if __name__ == "__main__":
