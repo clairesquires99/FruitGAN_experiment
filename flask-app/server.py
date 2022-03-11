@@ -46,7 +46,7 @@ def get_ID():
 def start():
     session_ID = request.args.get('session_ID')
     obj = json.loads(get_state(session_ID))
-    json_obj = experiment_setup(session_ID, obj['target_category'], obj['chain_num'])[0]
+    json_obj = experiment_setup(session_ID, obj['exp_num'])[0]
     save_state(session_ID, json_obj)
     obj = json.loads(json_obj)
     if write_to_database:
@@ -59,7 +59,7 @@ def run():
     selected_frame = request.args.get('selected_frame')
     session_ID = request.args.get('session_ID')
     obj_prev = json.loads(get_state(session_ID))
-    json_obj = experiment_loop(session_ID, selected_frame, obj_prev['iter_num'], obj_prev['target_category'], obj_prev['chain_num'])[0]
+    json_obj = experiment_loop(session_ID, obj_prev['exp_num'], selected_frame, obj_prev['iter_num'])[0]
     obj = json.loads(json_obj)
     save_state(session_ID, json_obj)
     if write_to_database:
@@ -70,7 +70,7 @@ def run():
 def end_chain():
     session_ID = request.args.get("session_ID")
     obj = json.loads(get_state(session_ID))
-    json_obj = experiment_finish(session_ID, obj['target_category'], obj['chain_num'])[0]
+    json_obj = experiment_finish(session_ID, obj['exp_num'])[0]
     obj = json.loads(json_obj)
     save_state(session_ID, json_obj)
     return json_obj

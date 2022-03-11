@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to serve FruitGAN experiment.
+After=network.target
+
+[Service]
+User=csquires
+Group=www-data
+Environment="PATH=/home/csquires/miniconda3/envs/svelte-flask-app/bin"
+WorkingDirectory=/home/csquires/FruitGAN_experiment/flask_app
+ExecStart=/home/csquires/miniconda3/envs/svelte-flask-app/bin/gunicorn --workers 3 \
+--bind unix:flask-app.sock -m 700 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
