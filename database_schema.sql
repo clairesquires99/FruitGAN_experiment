@@ -3,7 +3,8 @@
     target_category VARCHAR(20) NOT NULL,
     chain_num VARCHAR(10) NOT NULL,
     iteration_num INTEGER NOT NULL,
-    image BLOB NOT NULL
+    image BLOB NOT NULL,
+    latent TEXT NOT NULL
 );
 
 -- Store session states (under the hood stuff)

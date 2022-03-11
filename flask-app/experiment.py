@@ -24,7 +24,7 @@ size = 128
 truncation = 1.5
 target_categories = ['apple', 'orange', 'grape']
 tot_chains = 3 # number of chains per category
-num_components = 1 # number of eigen vectors/components to use
+num_components = 5 # number of eigen vectors/components to use
 repeats = 1 # number of times to run through all components
 file_path_dump = '../client/public/images'
 file_path_selected = '../results'
@@ -145,6 +145,7 @@ def experiment_setup(session_ID, exp_num):
     torch.manual_seed(start_seed)
     l = torch.randn(1, 512, device=device)
     l = g.get_latent(l)
+    latent_as_list = l.squeeze().tolist() # used in database storage
 
     # start experiment
     iter_num = 0
@@ -166,7 +167,8 @@ def experiment_setup(session_ID, exp_num):
         "image_path": starting_image_path,
         "iter_num": iter_num,
         "tot_iterations": tot_iterations,
-        "tot_frames": len(pts)-1
+        "tot_frames": len(pts)-1,
+        "latent": latent_as_list
     }
 
     torch.save(pts, f'{states_path}{session_ID}.pt')
@@ -191,9 +193,11 @@ def experiment_loop(session_ID, exp_num, selected_frame, iter_num):
     iter_num += 1
     pts = torch.load(f'{states_path}{session_ID}.pt')
     l = pts[selected_frame]
+    latent_as_list = l.squeeze().tolist() # used in database storage
     active_comp = iter_num % num_components # active component
     pts = apply_factor(session_ID, iter_num,index=active_comp, latent=l, file_path=this_dump_path)
     torch.save(pts, f'{states_path}{session_ID}.pt')
+
     # create video
     # cmd=f"ffmpeg -loglevel panic -y -r 10 -i {file_path_dump}/iteration-{iter_num:02}_frame-%03d.png -vcodec libx264 -pix_fmt yuv420p experiment_out/video_to_stream/iteration-{iter_num:02}.mp4"
     # subprocess.call(cmd, shell=True)
@@ -207,7 +211,8 @@ def experiment_loop(session_ID, exp_num, selected_frame, iter_num):
         "image_path": selected_image_path,
         "iter_num": iter_num,
         "tot_iterations": tot_iterations,
-        "tot_frames": len(pts)-1
+        "tot_frames": len(pts)-1,
+        "latent": latent_as_list
     }
     return json.dumps(json_obj), session_ID, iter_num
 

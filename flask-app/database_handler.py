@@ -18,12 +18,13 @@ def insert_database(obj):
     chain_num = obj['chain_num'] 
     iter_num = obj['iter_num']
     image_path = obj['image_path']
+    latent = str(obj['latent'])
     image_blob = convertToBinaryData(image_path)
     conn = get_db_connection()
     try:
         conn.execute(f'INSERT INTO results \
-        (session_ID, target_category, chain_num, iteration_num, image) \
-        VALUES (?, ?, ?, ?, ?)',(session_ID, target_category, chain_num, iter_num, image_blob))
+        (session_ID, target_category, chain_num, iteration_num, image, latent) \
+        VALUES (?, ?, ?, ?, ?, ?)',(session_ID, target_category, chain_num, iter_num, image_blob, latent))
         conn.commit()
     except Exception as e:
         conn.rollback()
