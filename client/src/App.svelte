@@ -85,27 +85,15 @@
 
 <div class="container-lg d-flex justify-content-center">
 	<div class="container-md cont">
-		<!-- <div
-			class="toast align-items-center text-white bg-primary border-0"
-			role="alert"
-			aria-live="assertive"
-			aria-atomic="true"
-		>
-			<div class="d-flex">
-				<div class="toast-body">Hello, world! This is a toast message.</div>
-				<button
-					type="button"
-					class="btn-close btn-close-white me-2 m-auto"
-					data-bs-dismiss="toast"
-					aria-label="Close"
-				/>
-			</div>
-		</div> -->
-		{#await response then}
-			{#if iter_num == 0 && exp_num != 0}
-				<p>hello</p>
-			{/if}
-		{/await}
+		<div class="alert-cont">
+			{#await response then}
+				{#if exp_num != 0 && iter_num == 0}
+					<div class="alert alert-primary fade show" role="alert">
+						The word changed!
+					</div>
+				{/if}
+			{/await}
+		</div>
 
 		<div class="cont-fruit-image">
 			{#await response}
@@ -121,7 +109,8 @@
 				{/if}
 			{:catch error}
 				<div class="alert alert-danger" role="alert">
-					Oops, something went wrong.
+					Oops, something went wrong. <br /> Please close the tab and try again.
+					<br /> If the error persists, contact s1843530@ed.ac.uk.
 				</div>
 			{/await}
 		</div>
@@ -137,15 +126,15 @@
 			min="0"
 			max={tot_frames}
 		/>
-		<p class="small text-muted">Slider is at {frame_num}</p>
-		<button class="btn btn-primary" on:click={run_experiment(frame_num)}
+		<!-- <p class="small text-muted">Slider is at {frame_num}</p> -->
+		<br />
+		<button class="btn btn-primary m-3" on:click={run_experiment(frame_num)}
 			>Confirm</button
 		>
 		<p class="small text-muted">Iteration: {iter_num} / {tot_iterations}</p>
-		<p class="small text-muted">Chain number: {chain_num} / {tot_chains}</p>
-		<p class="small text-muted">Exp number: {exp_num} / {tot_experiments}</p>
+		<!-- <p class="small text-muted">Chain number: {chain_num} / {tot_chains}</p> -->
+		<!-- <p class="small text-muted">Exp number: {exp_num} / {tot_experiments}</p> -->
 		<br />
-		<p class="small text-muted">Session ID: {session_ID}</p>
 		<div class="progress mt-5">
 			<div
 				class="progress-bar progress-bar-striped"
@@ -158,5 +147,6 @@
 				aria-valuemax={tot_iterations}
 			/>
 		</div>
+		<p class="small text-muted">Session ID: {session_ID}</p>
 	</div>
 </div>
