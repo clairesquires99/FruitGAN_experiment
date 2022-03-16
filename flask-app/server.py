@@ -15,7 +15,7 @@ write_to_database = True
 # Path for start page
 @app.route("/")
 def hello():
-    return render_template('index.html')
+    return render_template('experiment_down.html')
 
 @app.route("/information")
 def pis():

@@ -77,9 +77,14 @@ def merge_progressions(path):
         for c in categories:
             if os.path.exists(f"{path}{s}/{c}/progression.png"):
                 images.append(Image.open(f"{path}{s}/{c}/progression.png"))
-        merge_images_vertically(images, f"{path}{s}/progressions_{s}.png")
+        if len(images) > 0:
+            merge_images_vertically(images, f"results_summary/progressions_{s}.png")
 
 
 if __name__ == '__main__':
-    merge_progressions("test_runs/results_rea2/")
+    # merge_progressions("results/")
+    images = ['analysis/mean-2sd.png', 'analysis/mean-1sd.png', 'analysis/mean.png', 'analysis/mean+1sd.png', 'analysis/mean+2sd.png']
+    images = [Image.open(im) for im in images]
+    merge_images_horizontally(images, 'analysis/mean_sds.png')
+
     

@@ -44,16 +44,18 @@ g.load_state_dict(ckpt["g_ema"], strict=False)
 mean_latent, sd_latent = g.mean_sd(10000)
 trunc = mean_latent
 r = euclidean_dist(mean_latent, (mean_latent + (2 * sd_latent))) # 2 standard deviations away from the mean
+torch.save(mean_latent, f'{states_path}mean_latent.pt')
+torch.save(sd_latent, f'{states_path}sd_latent.pt')
+
 
 # testing orthoganality
-print(mean_latent)
-for i in range(5):
-    for j in range(5):
-        if i != j:
-            ei = eigvec[:, i].squeeze(0)
-            ej = eigvec[:, j].squeeze(0)
-            print(i, j, torch.dot(ei, ej))
-
+# print(mean_latent)
+# for i in range(5):
+#     for j in range(5):
+#         if i != j:
+#             ei = eigvec[:, i].squeeze(0)
+#             ej = eigvec[:, j].squeeze(0)
+#             print(i, j, torch.dot(ei, ej))
 
 
 def get_points(index, latent):
@@ -290,3 +292,25 @@ if __name__ == "__main__":
     # experiment_setup()
     # duration = timeit.timeit(time_this, number=1)
     # print(duration)
+
+    # VARIATION ON EIGEN DIRECTIONS
+    # for i in range(10):
+    #     pts = get_points(i, mean_latent)
+    #     left = pts[0]
+    #     right = pts [-1]
+    #     pts = line_interpolate([left, mean_latent, right], 2)
+    #     for j in range(len(pts)):
+    #         pt = pts[j]
+    #         img, _ = g(
+    #             [pt],
+    #             truncation=truncation,
+    #             truncation_latent=trunc,
+    #             input_is_latent=True,
+    #         )
+    #         grid = utils.save_image(
+    #             img,
+    #             f"../analysis/gans/eigen{i}_{j}.png", 
+    #             normalize=True,
+    #             value_range=(-1, 1),
+    #             nrow=1,
+    #         )
