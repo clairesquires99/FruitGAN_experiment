@@ -117,14 +117,16 @@ def generate_ID():
     # generate experiment ID
     session_ID = binascii.hexlify(os.urandom(20)).decode()
     chain_num = 0
+    setup_finished = False
     target_category = random.choice(target_categories)
     json_obj = {
         "session_ID": session_ID,
         "target_category": target_category,
         "tot_chains": tot_chains,
-        "chain_num": chain_num
+        "chain_num": chain_num,
+        "setup_finished": setup_finished
     }
-    return json.dumps(json_obj), session_ID, chain_num, target_category
+    return json.dumps(json_obj), session_ID, chain_num, target_category, setup_finished
 
 def experiment_setup(session_ID, chain_num, target_category):
     this_dump_path = f"{file_path_dump}/{session_ID}/{target_category}{chain_num}"
@@ -167,14 +169,19 @@ def experiment_setup(session_ID, chain_num, target_category):
     if not os.path.exists(this_state_path): os.makedirs(this_state_path)
     torch.save(pts, f'{this_state_path}/{target_category}{chain_num}.pt')
 
-    print("Experiment setup finished for ", session_ID)
-    return json.dumps(json_obj), session_ID, chain_num, target_category, starting_image_path, iter_num, tot_iterations
+    print(f"Experiment setup finished for {target_category}{chain_num} ({session_ID})")
+
+    chain_num = (chain_num + 1) % tot_chains
+
+    return json.dumps(json_obj), session_ID, target_category, starting_image_path, iter_num, tot_iterations, chain_num
 
 def experiment_loop(session_ID, chain_num, selected_frame, iter_num, target_category):
-    print(f"Running loop for {target_category}{chain_num} iteration {iter_num}")
-
+    chain_num = chain_num % tot_chains
     selected_frame = int(selected_frame)
     iter_num = int(iter_num)
+
+    print(f"Running loop for iteration {iter_num} | {target_category}{chain_num}")
+
     # move selected frame/image from dump to selected folder
     this_dump_path = f"{file_path_dump}/{session_ID}/{target_category}{chain_num}"
     this_selected_path = f"{file_path_selected}/{session_ID}/{target_category}{chain_num}"
@@ -205,9 +212,16 @@ def experiment_loop(session_ID, chain_num, selected_frame, iter_num, target_cate
         "tot_frames": len(pts)-1,
         "latent": latent_as_list
     }
-    return json.dumps(json_obj), session_ID, iter_num
+
+    chain_num += 1
+    if chain_num == tot_chains: iter_num += 1
+    chain_num = chain_num % tot_chains
+
+    return json.dumps(json_obj), session_ID, iter_num, chain_num
 
 def experiment_finish(session_ID, chain_num, target_category):
+    chain_num = chain_num % tot_chains
+
     this_dump_path = f"{file_path_dump}/{session_ID}/{target_category}{chain_num}"
     this_selected_path = f"{file_path_selected}/{session_ID}/{target_category}{chain_num}"
     # saves selected images to progression.png
@@ -235,15 +249,14 @@ def experiment_finish(session_ID, chain_num, target_category):
 
     print(f"Experiment {target_category}{chain_num} ended ({session_ID})")
 
-    # increase chain_num (experiment number) for next experiment start
-    # chain_num += 1
-
     json_obj = {
         "session_ID": session_ID,
         "target_category": target_category,
         "tot_chains": tot_chains,
         "chain_num": chain_num
     }
+
+    chain_num += 1
 
     return json.dumps(json_obj), chain_num
 
@@ -254,23 +267,23 @@ def time_this():
         experiment_loop(arg)
 
 if __name__ == "__main__":
-    # _, session_ID, chain_num, target_category = generate_ID()
-    # while int(chain_num) < tot_chains:
-    #     _ , session_ID, chain_num, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup(session_ID, chain_num, target_category)
-    #     while iter_num < tot_iterations:
-    #         selected_frame = int(input("selected frame: "))
-    #         _ , session_ID, iter_num = experiment_loop(session_ID, chain_num, selected_frame, iter_num, target_category)
-    #     _, chain_num = experiment_finish(session_ID, chain_num, target_category)
-
-
-    _, session_ID, chain_num, target_category = generate_ID()
-    for chain_num in range(tot_chains):
-        _ , session_ID, chain_num, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup(session_ID, chain_num, target_category)
-    for iter_num in range(tot_iterations):
-        for chain_num in range(tot_chains):
-            selected_frame = int(input("selected frame: "))
-            _ , session_ID, iter_num = experiment_loop(session_ID, chain_num, selected_frame, iter_num, target_category)
-
+    _, session_ID, chain_num, target_category, setup_finished = generate_ID()
+    #setup
+    while chain_num < tot_chains:
+        _ , session_ID, target_category, starting_image_path, iter_num, tot_iterations, chain_num = experiment_setup(session_ID, chain_num, target_category)
+        if chain_num == 0:
+            break
+    #loop
+    while iter_num < tot_iterations:
+        while chain_num < tot_chains:
+            # selected_frame = int(input("selected frame: "))
+            selected_frame = 50
+            _ , session_ID, iter_num, chain_num = experiment_loop(session_ID, chain_num, selected_frame, iter_num, target_category)
+            if chain_num == 0:
+                break
+    #finish
+    while chain_num < tot_chains:
+        _, chain_num = experiment_finish(session_ID, chain_num, target_category)
 
 
     # TIMING TESTS
