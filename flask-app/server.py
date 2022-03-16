@@ -9,7 +9,7 @@ from flask import request
 app = Flask(__name__, template_folder='../client/public')
 
 # DATABASE
-write_to_database = True
+write_to_database = False
 
 # ROUTING
 # Path for start page

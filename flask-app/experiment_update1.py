@@ -24,10 +24,10 @@ size = 128
 truncation = 1.5
 target_categories = ['apple', 'orange', 'grape']
 tot_chains = 3 # number of chains
-num_components = 5 # number of eigen vectors/components to use
-repeats = 5 # number of times to run through all components
+num_components = 1 # number of eigen vectors/components to use
+repeats = 1 # number of times to run through all components
 file_path_dump = '../client/public/images'
-file_path_selected = '../results'
+file_path_selected = '../results_testing'
 # file_path_video = '../experiment_out/video_to_stream'
 
 # calculations
@@ -118,8 +118,8 @@ def generate_ID():
     # generate experiment ID
     session_ID = binascii.hexlify(os.urandom(20)).decode()
     exp_num = 0
-    chain_num = exp_num // tot_chains
-    target_category = target_categories[exp_num % tot_chains]
+    chain_num = 0
+    target_category = random.choice(target_categories)
     json_obj = {
         "session_ID": session_ID,
         "exp_num": exp_num,
@@ -128,11 +128,13 @@ def generate_ID():
         "tot_chains": tot_chains,
         "chain_num": chain_num
     }
-    return json.dumps(json_obj), session_ID, exp_num
+    return json.dumps(json_obj), session_ID, exp_num, target_category
 
-def experiment_setup(session_ID, exp_num):
-    chain_num = exp_num // tot_chains
-    target_category = target_categories[exp_num % tot_chains]
+def experiment_setup(session_ID, exp_num, target_category):
+    chain_num = exp_num
+
+    print("Experiment num: ", exp_num)
+    print("Chain num     : ", chain_num)
 
     this_dump_path = f"{file_path_dump}/{session_ID}/{target_category}{chain_num}"
     this_selected_path = f"{file_path_selected}/{session_ID}/{target_category}{chain_num}"
@@ -176,9 +178,8 @@ def experiment_setup(session_ID, exp_num):
     print("Experiment setup finished for ", session_ID)
     return json.dumps(json_obj), session_ID, exp_num, target_category, starting_image_path, iter_num, tot_iterations
 
-def experiment_loop(session_ID, exp_num, selected_frame, iter_num):
-    chain_num = exp_num // tot_chains
-    target_category = target_categories[exp_num % tot_chains]
+def experiment_loop(session_ID, exp_num, selected_frame, iter_num, target_category):
+    chain_num = exp_num
 
     selected_frame = int(selected_frame)
     iter_num = int(iter_num)
@@ -216,9 +217,8 @@ def experiment_loop(session_ID, exp_num, selected_frame, iter_num):
     }
     return json.dumps(json_obj), session_ID, iter_num
 
-def experiment_finish(session_ID, exp_num):
-    chain_num = exp_num // tot_chains
-    target_category = target_categories[exp_num % tot_chains]
+def experiment_finish(session_ID, exp_num, target_category):
+    chain_num = exp_num
 
     this_dump_path = f"{file_path_dump}/{session_ID}/{target_category}{chain_num}"
     this_selected_path = f"{file_path_selected}/{session_ID}/{target_category}{chain_num}"
@@ -246,6 +246,8 @@ def experiment_finish(session_ID, exp_num):
     # cleanup
     os.remove(f'{states_path}{session_ID}.pt')
 
+    print(f"Experiment {exp_num} ended (chain {target_category}{chain_num}; {session_ID})")
+
     # increase exp_num (experiment number) for next experiment start
     exp_num += 1
 
@@ -257,7 +259,6 @@ def experiment_finish(session_ID, exp_num):
         "chain_num": chain_num
     }
 
-    print(f"Experiment {exp_num} ended (chain {target_category}{chain_num}; {session_ID})")
     return json.dumps(json_obj), exp_num
 
 # timing tests
@@ -267,13 +268,13 @@ def time_this():
         experiment_loop(arg)
 
 if __name__ == "__main__":
-    _, session_ID, exp_num = generate_ID()
+    _, session_ID, exp_num, target_category = generate_ID()
     while int(exp_num) < tot_experiments:
-        _ , session_ID, exp_num, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup(session_ID, exp_num)
+        _ , session_ID, exp_num, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup(session_ID, exp_num, target_category)
         while iter_num < tot_iterations:
             selected_frame = int(input("selected frame: "))
-            _ , session_ID, iter_num = experiment_loop(session_ID, exp_num, selected_frame, iter_num)
-        _, exp_num = experiment_finish(session_ID, exp_num)
+            _ , session_ID, iter_num = experiment_loop(session_ID, exp_num, selected_frame, iter_num, target_category)
+        _, exp_num = experiment_finish(session_ID, exp_num, target_category)
 
     # TIMING TESTS
     # experiment_setup()
