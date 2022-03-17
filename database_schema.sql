@@ -9,8 +9,10 @@
 
 -- Store session states (under the hood stuff)
 CREATE TABLE states (
-    session_ID VARCHAR(40) PRIMARY KEY,
-    json_obj TEXT
+    session_ID VARCHAR(40) NOT NULL,
+    chain_num INTEGER NOT NULL,
+    json_obj TEXT,
+    PRIMARY KEY (session_ID, chain_num)
 );
 
 -- Store experiment session_IDs of participants that completed the experiment
