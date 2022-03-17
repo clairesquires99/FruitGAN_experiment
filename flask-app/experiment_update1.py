@@ -24,10 +24,10 @@ size = 128
 truncation = 1.5
 target_categories = ['apple', 'orange', 'grape']
 tot_chains = 3 # number of chains
-num_components = 1 # number of eigen vectors/components to use
-repeats = 1 # number of times to run through all components
+num_components = 5 # number of eigen vectors/components to use
+repeats = 5 # number of times to run through all components
 file_path_dump = '../client/public/images'
-file_path_selected = '../results_testing'
+file_path_selected = '../results_experiment1'
 # file_path_video = '../experiment_out/video_to_stream'
 
 # calculations
@@ -132,9 +132,6 @@ def generate_ID():
 
 def experiment_setup(session_ID, exp_num, target_category):
     chain_num = exp_num
-
-    print("Experiment num: ", exp_num)
-    print("Chain num     : ", chain_num)
 
     this_dump_path = f"{file_path_dump}/{session_ID}/{target_category}{chain_num}"
     this_selected_path = f"{file_path_selected}/{session_ID}/{target_category}{chain_num}"

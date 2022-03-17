@@ -1,7 +1,7 @@
 
 from flask import Flask, send_from_directory, redirect, render_template, request, flash
 import sqlite3 as sql
-from experiment import generate_ID, experiment_setup, experiment_loop, experiment_finish
+from experiment_update1 import generate_ID, experiment_setup, experiment_loop, experiment_finish
 from database_handler import insert_database, save_state, get_state, insert_completed
 import json
 from flask import request
@@ -9,13 +9,13 @@ from flask import request
 app = Flask(__name__, template_folder='../client/public')
 
 # DATABASE
-write_to_database = False
+write_to_database = True
 
 # ROUTING
 # Path for start page
 @app.route("/")
 def hello():
-    return render_template('experiment_down.html')
+    return render_template('index.html')
 
 @app.route("/information")
 def pis():
@@ -46,7 +46,7 @@ def get_ID():
 def start():
     session_ID = request.args.get('session_ID')
     obj = json.loads(get_state(session_ID))
-    json_obj = experiment_setup(session_ID, obj['exp_num'])[0]
+    json_obj = experiment_setup(session_ID, obj['exp_num'], obj['target_category'])[0]
     save_state(session_ID, json_obj)
     obj = json.loads(json_obj)
     if write_to_database:
@@ -59,7 +59,7 @@ def run():
     selected_frame = request.args.get('selected_frame')
     session_ID = request.args.get('session_ID')
     obj_prev = json.loads(get_state(session_ID))
-    json_obj = experiment_loop(session_ID, obj_prev['exp_num'], selected_frame, obj_prev['iter_num'])[0]
+    json_obj = experiment_loop(session_ID, obj_prev['exp_num'], selected_frame, obj_prev['iter_num'],  obj_prev['target_category'])[0]
     obj = json.loads(json_obj)
     save_state(session_ID, json_obj)
     if write_to_database:
@@ -70,7 +70,7 @@ def run():
 def end_chain():
     session_ID = request.args.get("session_ID")
     obj = json.loads(get_state(session_ID))
-    json_obj = experiment_finish(session_ID, obj['exp_num'])[0]
+    json_obj = experiment_finish(session_ID, obj['exp_num'], obj['target_category'])[0]
     obj = json.loads(json_obj)
     save_state(session_ID, json_obj)
     return json_obj

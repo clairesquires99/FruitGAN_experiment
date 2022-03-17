@@ -85,16 +85,6 @@
 
 <div class="container-lg d-flex justify-content-center">
 	<div class="container-md cont">
-		<div class="alert-cont">
-			{#await response then}
-				{#if exp_num != 0 && iter_num == 0}
-					<div class="alert alert-primary fade show" role="alert">
-						The word changed!
-					</div>
-				{/if}
-			{/await}
-		</div>
-
 		<div class="cont-fruit-image">
 			{#await response}
 				<Moon size="60" color="#333" unit="px" duration="1s" />
@@ -131,7 +121,7 @@
 		<button class="btn btn-primary m-3" on:click={run_experiment(frame_num)}
 			>Confirm</button
 		>
-		<p class="small text-muted">Iteration: {iter_num} / {tot_iterations}</p>
+		<!-- <p class="small text-muted">Iteration: {iter_num} / {tot_iterations}</p> -->
 		<!-- <p class="small text-muted">Chain number: {chain_num} / {tot_chains}</p> -->
 		<!-- <p class="small text-muted">Exp number: {exp_num} / {tot_experiments}</p> -->
 		<br />

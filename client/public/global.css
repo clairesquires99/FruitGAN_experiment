@@ -65,14 +65,6 @@ button:focus {
 	border-color: #666;
 }
 
-/* .container-lg {
-	background-color: #E6E6FA;
-} */
-
-.alert-cont {
-	height: 60px;
-}
-
 .text-700 {
 	max-width: 700px;
 	margin-left: auto;
