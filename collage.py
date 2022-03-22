@@ -83,8 +83,13 @@ def merge_progressions(path):
 
 if __name__ == '__main__':
     # merge_progressions("results/")
-    images = ['analysis/mean-2sd.png', 'analysis/mean-1sd.png', 'analysis/mean.png', 'analysis/mean+1sd.png', 'analysis/mean+2sd.png']
-    images = [Image.open(im) for im in images]
-    merge_images_horizontally(images, 'analysis/mean_sds.png')
+    # images = ['analysis/mean-2sd.png', 'analysis/mean-1sd.png', 'analysis/mean.png', 'analysis/mean+1sd.png', 'analysis/mean+2sd.png']
+    # images = [Image.open(im) for im in images]
+    # merge_images_horizontally(images, 'analysis/mean_sds.png')
+
+    for fruit in ['apple', 'orange', 'grape']:
+        images = get_images_vh(f'analysis/results_by_fruit/experiment1/{fruit}/')
+        merge_images_vertically(images, f'analysis/results_by_fruit/experiment1/{fruit}.png')
+
 
     
