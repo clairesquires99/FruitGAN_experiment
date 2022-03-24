@@ -265,13 +265,13 @@ def time_this():
         experiment_loop(arg)
 
 if __name__ == "__main__":
-    _, session_ID, exp_num, target_category = generate_ID()
-    while int(exp_num) < tot_experiments:
-        _ , session_ID, exp_num, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup(session_ID, exp_num, target_category)
-        while iter_num < tot_iterations:
-            selected_frame = int(input("selected frame: "))
-            _ , session_ID, iter_num = experiment_loop(session_ID, exp_num, selected_frame, iter_num, target_category)
-        _, exp_num = experiment_finish(session_ID, exp_num, target_category)
+    # _, session_ID, exp_num, target_category = generate_ID()
+    # while int(exp_num) < tot_experiments:
+    #     _ , session_ID, exp_num, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup(session_ID, exp_num, target_category)
+    #     while iter_num < tot_iterations:
+    #         selected_frame = int(input("selected frame: "))
+    #         _ , session_ID, iter_num = experiment_loop(session_ID, exp_num, selected_frame, iter_num, target_category)
+    #     _, exp_num = experiment_finish(session_ID, exp_num, target_category)
 
     # TIMING TESTS
     # experiment_setup()

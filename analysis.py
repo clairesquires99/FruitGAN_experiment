@@ -16,7 +16,7 @@ import sys
 sys.path.insert(0, '/home/csquires/FruitGAN_experiment/stylegan2-pytorch') # necessary to get Generator from model
 from model import Generator
 
-device = 'cuda'
+device = 'cpu'
 ckpt_path = 'custom_models/fruits3.pt' 
 cff_path = 'stylegan2-pytorch/factor_fruits3.pt'
 size = 128
@@ -129,6 +129,7 @@ def rows_to_array(rows):
         string = row[0][1:-1]
         latent = list(string.split(", "))
         latent = [float(l) for l in latent]
+
         latents.append(latent)
     array = np.array(latents)
     return array
@@ -218,10 +219,32 @@ def plot_chains(fruit):
     plt.xticks(ticks, labels)
     sns.despine(top=True, right=True, left=True, bottom=True)
     plt.savefig(f"chains_{fruit}.png")
+
+def project_features(latents, e_num):
+    # transform latents from 512 dimensions to 1
+    # using eigen vector as projection matrix
+    e = eigvec[e_num]
+    reduced = latents.dot(e)
+    return reduced
+
+def density_plot(fruits, labels):
+    r = len(fruits)
+    fig, axes = plt.subplots(r, 5, sharex=True, sharey=True, figsize=(14,10))
+    for i, fruit in enumerate(fruits):
+        rows = get_latents(fruit)
+        latents = rows_to_array(rows)
+        for e_num in range(5):
+            data = project_features(latents, e_num)
+            a = sns.distplot(data, hist=True, kde=True, ax=axes[i, e_num])
+            a.set_xlabel(f'eigen direction {e_num}')
+            a.set_ylabel(labels[i])
+    fig.savefig('density_plot.png')
     
 
 if __name__ == '__main__':
-    plot_chains('apple')
+    density_plot(['all', 'apple', 'orange', 'grape'], ['All fruits', 'Apple', 'Orange', 'Grape'])
+
+
         
 
     
