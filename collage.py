@@ -42,13 +42,31 @@ def get_images_vh(path):
     os.chdir(cwd) # change back to original directory
     return images
 
+def cluster_centers():
+    fruit = 'orange'
+    path = f"analysis/gmm/gmm_diag/{fruit}"
+    rows = []
+    for i in range(1, 5):
+        imgs = []
+        for j in range(i):
+            imgs.append(f"{path}/tot{i}_c{j}.png")
+        for k in range(4-i):
+            imgs.append("analysis/blank.png")
+        imgs = [Image.open(im) for im in imgs]
+        h_path = f"{path}/row_clusters{i}.png"
+        merge_images_horizontally(imgs, h_path)
+        rows.append(h_path)
+    rows = [Image.open(im) for im in rows]
+    merge_images_vertically(rows, f"{path}/clusters_{fruit}.png")
+
+
 def merge_images_vertically(imgs, file_name):
     #create two lists - one for heights and one for widths
     widths, heights = zip(*(i.size for i in imgs))
     width_of_new_image = min(widths)  #take minimum width
     height_of_new_image = sum(heights)
     # create new image
-    new_im = Image.new('RGB', (width_of_new_image, height_of_new_image))
+    new_im = Image.new('RGB', (width_of_new_image, height_of_new_image), (255, 255, 255))
     new_pos = 0
     for im in imgs:
         new_im.paste(im, (0, new_pos))
@@ -61,7 +79,7 @@ def merge_images_horizontally(imgs, file_name):
     width_of_new_image = sum(widths)
     height_of_new_image = min(heights) #take minimum height
     # create new image
-    new_im = Image.new('RGB', (width_of_new_image, height_of_new_image))
+    new_im = Image.new('RGB', (width_of_new_image, height_of_new_image), (255, 255, 255))
     new_pos = 0
     for im in imgs:
         new_im.paste(im, (new_pos,0))
@@ -91,17 +109,17 @@ if __name__ == '__main__':
     #     images = get_images_vh(f'analysis/results_by_fruit/experiment1/{fruit}/')
     #     merge_images_vertically(images, f'analysis/results_by_fruit/experiment1/{fruit}.png')
 
-    imgs = os.listdir('fruits3_training_samples/')
-    imgs.sort()
-    images = []
-    cwd = os.getcwd()
-    os.chdir('fruits3_training_samples/')
-    for i in range(0, 64, 8):
-        subset = imgs[i:i+8]
-        subset = [Image.open(im) for im in subset]
-        images += [subset]
-    os.chdir(cwd)
-    make_collage(images, 128)
+    # imgs = os.listdir('fruits3_training_samples/')
+    # imgs.sort()
+    # images = []
+    # cwd = os.getcwd()
+    # os.chdir('fruits3_training_samples/')
+    # for i in range(0, 64, 8):
+    #     subset = imgs[i:i+8]
+    #     subset = [Image.open(im) for im in subset]
+    #     images += [subset]
+    # os.chdir(cwd)
+    # make_collage(images, 128)
 
-
+    cluster_centers()
     

@@ -5,12 +5,14 @@ import numpy as np
 import torch
 from torchvision import utils
 from sklearn.mixture import GaussianMixture
-from tabulate import tabulate
 from sklearn.metrics import silhouette_score
+from sklearn.decomposition import PCA
+from tabulate import tabulate
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import matplotlib.image as mpimg
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 import sys
 sys.path.insert(0, '/home/csquires/FruitGAN_experiment/stylegan2-pytorch') # necessary to get Generator from model
@@ -160,6 +162,7 @@ def gmm(data, n):
     return gmm.means_, aic, bic, silhouette
 
 def plot_aic():
+    # plots the AIC and BIC scores of the gmm
     for fruit in  ['apple', 'orange', 'grape']:
         rows = get_latents(fruit)
         latents = rows_to_array(rows)
@@ -223,7 +226,12 @@ def plot_chains(fruit):
 def project_features(latents, e_num):
     # transform latents from 512 dimensions to 1
     # using eigen vector as projection matrix
-    e = eigvec[e_num]
+    e = eigvec[:, e_num] # vectors as columns
+    reduced = latents.dot(e)
+    return reduced
+
+def reduce_features_5d(latents):
+    e = eigvec[:, :5]
     reduced = latents.dot(e)
     return reduced
 
@@ -239,11 +247,81 @@ def density_plot(fruits, labels):
             a.set_xlabel(f'eigen direction {e_num}')
             a.set_ylabel(labels[i])
     fig.savefig('density_plot.png')
-    
+
+def latents_to_images(latents, fruit):
+    # latents given as tensors
+    paths = []
+    for i in range(len(latents)):
+        pt = latents[i]
+        path = f"analysis/images/{fruit}/{i}.png"
+        paths.append(path)
+        generate_image(pt, path)
+    return paths
+
+def tensors_to_array(tensors):
+    array = np.empty((1, 512))
+    for t in tensors:
+        n = t.detach().cpu().numpy()
+        array = np.append(array, n, axis=0)
+    print(array)
+    return array
+
+def helper1(path):
+    return OffsetImage(plt.imread(path), zoom=.2)
+
+def write_file(data, filename):
+    # Convert binary data to proper format and write it on Hard Disk
+    with open(filename, 'wb') as file:
+        file.write(data)
+
+# plt.rcParams["figure.autolayout"] = True
+
+def pca_2d():
+    fruit = 'all'
+
+    conn = sql.connect('analysis.db')
+    conn.row_factory = sql.Row
+    cusor = conn.cursor()
+    query = f'SELECT latent, image FROM no_burnin_{fruit};'
+    cusor.execute(query)
+    rows = cusor.fetchall()
+    conn.close()
+
+    latents_np = rows_to_array(rows)
+    latents_5d = reduce_features_5d(latents_np)
+    pca = PCA(n_components=2)
+    pca = pca.fit(latents_5d)
+
+    fig, ax = plt.subplots()
+    for i in range(len(rows)):
+        row = rows[i]
+        # latent
+        string = row[0][1:-1]
+        latent = list(string.split(", "))
+        latent = [float(l) for l in latent]
+        latent = np.array(latent).reshape(1,-1)
+        latent_5d = reduce_features_5d(latent)
+        pt = pca.transform(latent_5d)
+        # image
+        fname = f"analysis/images/{fruit}/{i}.png"
+        blob = row[1]
+        write_file(blob, fname)
+        # plot
+        ab = AnnotationBbox(helper1(fname), (pt[0][0], pt[0][1]), frameon=False)
+        ax.add_artist(ab)
+        ax.plot(pt[0][0], pt[0][1], ".r")
+
+        # print(f"Point {pt[0]} plotted with image {fname}")
+    plt.xlabel('Principal component 0')
+    plt.ylabel('Principal component 1')
+    fig.savefig(f'pca_{fruit}.png')
+
+
+
 
 if __name__ == '__main__':
-    density_plot(['all', 'apple', 'orange', 'grape'], ['All fruits', 'Apple', 'Orange', 'Grape'])
-
+    # density_plot(['all', 'apple', 'orange', 'grape'], ['All fruits', 'Apple', 'Orange', 'Grape'])
+    pca_2d()
 
         
 
