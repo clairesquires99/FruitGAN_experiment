@@ -265,6 +265,7 @@ def time_this():
         experiment_loop(arg)
 
 if __name__ == "__main__":
+    pass
     # _, session_ID, exp_num, target_category = generate_ID()
     # while int(exp_num) < tot_experiments:
     #     _ , session_ID, exp_num, target_category, starting_image_path, iter_num, tot_iterations = experiment_setup(session_ID, exp_num, target_category)
