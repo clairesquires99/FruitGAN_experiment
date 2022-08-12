@@ -17,3 +17,4 @@ participants’ categories. Broadly, this project showed that there is potential
 GANs to enhance the study of category representations, as well as for a generalised
 application that would facilitate this research.
 
+<i>Please contact me for the full report.</i>
