@@ -1,4 +1,7 @@
-<h3>Abstract (extracted from report)</h3>
+# FruitGAN: Exploring human concepts with Generative Adversarial Networks
+This repository contains the majority of the code used to run the experiments exploring human concepts detailed in the [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov). This report details the work and research completed for my final year project at The University of Edinburgh.
+
+### Abstract
 
 Cognitive science seeks to understand a variety of mental phenomena, one of which
 is the representation of concepts in the human mind. This project focuses on the
@@ -17,4 +20,4 @@ participants’ categories. Broadly, this project showed that there is potential
 GANs to enhance the study of category representations, as well as for a generalised
 application that would facilitate this research.
 
-<i>Please contact me for the full report.</i>
+[_See the full report._](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov)
