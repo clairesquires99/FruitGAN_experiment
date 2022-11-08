@@ -1,7 +1,7 @@
 # FruitGAN: Exploring human concepts with Generative Adversarial Networks
-This repository contains the majority of the code used to run the experiments exploring human concepts detailed in the [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov). This report details the work and research completed for my final year project at The University of Edinburgh.
+This repository contains the majority of the code used to create the web app used to run the experiments exploring human concepts detailed in the [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov). This report details the work and research completed for my final year project at The University of Edinburgh.
 
-### Abstract
+### Project Abstract
 
 Cognitive science seeks to understand a variety of mental phenomena, one of which
 is the representation of concepts in the human mind. This project focuses on the
@@ -20,4 +20,22 @@ participants’ categories. Broadly, this project showed that there is potential
 GANs to enhance the study of category representations, as well as for a generalised
 application that would facilitate this research.
 
-[_See the full report._](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov)
+_See the full [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov)._
+
+### About the Code
+This repo is unfortunately quite messy. Due to the timeline of the project, little time was spent refactoring. You can therefore expect to find redundent directories and/or files.
+
+Four submodules are included, linking to repos that were used to implement the experiments. In the final working version of the project, the StyleGAN network used was `stylegan2-pytorch`. The following submodules were not used in the final version of the web app (and are therefore redundent here): `ganspace`, `stylegan2` and `stylegan2-ada-pytorch`.
+
+The [flask-app](flask-app/) directory contains all the code required to run the web app using flask. This includes the backend logic and interaction with databases.
+
+The [client](client/) directory contains the svelte code required for the front-end of the web app.
+
+Several python files were written to setup and maintain the environment, as well as perform analyses. 
+- [analysis.py](analysis.py) was used to analyse the data generated from the experiements.
+- [cleanup.py](cleanup.py) was run to clean up of all the data produced by the experiments (generally run after testing to remove all the images generated from the test experiment).
+- [collage.py](collage.py) generated the images used in the report – collages of various sets of fruit images.
+
+Technically, the web app should be able to run with only the [flask-app](flask-app/) and [client](client/) directories. However they will require a pre-trained GAN (formerley kept at '../custom_models/fruits.pt'). The remaining files are expected to be unnecessary for replicating the web app experiment.
+
+This app is able to run using any trained GAN network (see Chapter 6 of the [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov)) provided it satisfies some requirements (mostly imposed by the `stylegan2-pytorch` repo).
