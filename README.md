@@ -1,5 +1,5 @@
 # FruitGAN: Exploring human concepts with Generative Adversarial Networks
-This repository contains the majority of the code used to create the web app used to run the experiments exploring human concepts detailed in the [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov). This report details the work and research completed for my final year project at The University of Edinburgh.
+This repository contains the majority of the code used to create the web app used to run the experiments exploring human concepts detailed in the [report](https://project-archive.inf.ed.ac.uk/ug4/20223024/ug4_proj.pdf). This report details the work and research completed for my final year project at The University of Edinburgh.
 
 ### Project Abstract
 
@@ -20,7 +20,7 @@ participants’ categories. Broadly, this project showed that there is potential
 GANs to enhance the study of category representations, as well as for a generalised
 application that would facilitate this research.
 
-_See the full [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov)._
+_See the full [report](https://project-archive.inf.ed.ac.uk/ug4/20223024/ug4_proj.pdf)._
 
 ### About the Code
 This repo is unfortunately quite messy. Due to the timeline of the project, little time was spent refactoring. You can therefore expect to find redundent directories and/or files.
@@ -38,4 +38,4 @@ Several python files were written to setup and maintain the environment, as well
 
 Technically, the web app should be able to run with only the [flask-app](flask-app/) and [client](client/) directories. However they will require a pre-trained GAN (formerley kept at '../custom_models/fruits.pt'). The remaining files are expected to be unnecessary for replicating the web app experiment.
 
-This app is able to run using any trained GAN network (see Chapter 6 of the [report](https://app.box.com/s/lpe0mnm1k1c85ken4cmnkw9c2jqhq3ov)) provided it satisfies some requirements (mostly imposed by the `stylegan2-pytorch` repo).
+This app is able to run using any trained GAN network (see Chapter 6 of the [report](https://project-archive.inf.ed.ac.uk/ug4/20223024/ug4_proj.pdf)) provided it satisfies some requirements (mostly imposed by the `stylegan2-pytorch` repo).
